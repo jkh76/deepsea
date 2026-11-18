@@ -14,7 +14,6 @@
   /* ---------- 월드(카메라 대상) ---------- */
   #viewport { position: fixed; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
   #viewport.dragging { cursor: grabbing; }
-  #hint { position: fixed; right: 12px; bottom: 12px; z-index: 20; font-size: 12px; color: #7fa7c8; background: #061a30aa; padding: 4px 10px; border-radius: 8px; pointer-events: none; }
   #world { position: absolute; left: 0; top: 0; width: 1000px; transform-origin: 0 0; border-radius: 28px; overflow: hidden;
     background: linear-gradient(#49b6e3 0%, #1f78ad 16%, #0f4878 40%, #072648 70%, #020c1f 100%);
     box-shadow: 0 0 0 4px #0a2a4a, 0 30px 120px #000; }
@@ -32,18 +31,17 @@
   .swimmer > div { line-height: 0; }
   .fish { position: absolute; font-size: 26px; opacity: .55; }
 
-  /* ---------- 잠수함 ---------- */
+  /* ---------- 잠수함 (노란 잠수함 일러스트 스타일, SVG) ---------- */
   #sub { position: absolute; left: 290px; top: 80px; width: 420px; height: 130px; }
-  .sub-tower { position: absolute; left: 165px; top: 0; width: 90px; height: 50px; background: linear-gradient(#ffd95c, #f0b020);
-    border: 4px solid #6b4300; border-radius: 16px 16px 0 0; }
-  .sub-tower::before { content: ''; position: absolute; left: 30px; top: -26px; width: 8px; height: 26px; background: #6b4300; border-radius: 4px; }
-  .sub-tower::after { content: ''; position: absolute; left: 30px; top: -26px; width: 26px; height: 8px; background: #6b4300; border-radius: 4px; }
-  .sub-body { position: absolute; left: 0; top: 40px; width: 420px; height: 90px; border-radius: 46px; border: 4px solid #6b4300;
-    background: linear-gradient(#ffe27a, #f2b324 55%, #d18a0c); display: flex; align-items: center; justify-content: center; }
-  .sub-body::before { content: ''; position: absolute; left: -26px; top: 26px; width: 22px; height: 30px; background: #6b4300; border-radius: 6px 0 0 6px; }
-  .sub-gauge { background: #0b2238; border: 3px solid #6b4300; border-radius: 14px; padding: 6px 12px; display: flex; align-items: center; gap: 10px; }
-  .sub-gauge .lbl { font-weight: 900; color: #7fd8ff; font-size: 16px; }
-  .sub-gauge .o2num { font-size: 30px; font-weight: 900; color: #fff; width: 42px; text-align: center; }
+  .sub-art { position: absolute; left: -70px; top: -70px; width: 540px; height: 240px; overflow: visible; filter: drop-shadow(0 10px 14px #0005); }
+  .sub-art .prop { transform-box: fill-box; transform-origin: 50% 50%; animation: subprop .35s linear infinite; }
+  @keyframes subprop { 0% { transform: scaleY(1); } 50% { transform: scaleY(-1); } 100% { transform: scaleY(1); } }
+  .sub-gauge { position: absolute; left: 34px; top: 66px; background: #0b2238; border: 3px solid #e8735a; border-radius: 14px;
+    padding: 4px 10px; display: flex; align-items: center; gap: 8px; box-shadow: inset 0 2px 6px #000a; }
+  .sub-gauge .lbl { font-weight: 900; color: #7fd8ff; font-size: 14px; }
+  .sub-gauge .o2num { font-size: 24px; font-weight: 900; color: #fff; width: 34px; text-align: center; }
+  .sub-gauge .o2cells { width: 148px; gap: 1.5px; }
+  .sub-gauge .o2cell { height: 12px; }
   .o2cells { display: grid; grid-template-columns: repeat(25, 1fr); gap: 2px; width: 230px; }
   .o2cell { height: 14px; background: #2fe08a; border-radius: 2px; transition: background .2s; }
   .o2cell.off { background: #ffffff1a; }
@@ -94,54 +92,69 @@
     text-shadow: 0 2px 0 #000, 0 0 10px #000; }
 
   /* ---------- HUD ---------- */
-  #topStack { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 20; display: none; flex-direction: column;
-    align-items: center; gap: 6px; max-width: 98vw; pointer-events: none; }
+  #topStack { position: fixed; top: 10px; left: 10px; right: 10px; z-index: 20; display: none; justify-content: center; pointer-events: none; }
   #topStack > * { pointer-events: auto; }
-  #top { display: flex; align-items: center; gap: 16px;
-    background: #061a30dd; border: 2px solid #1d4e7a; border-radius: 16px; padding: 8px 16px; backdrop-filter: blur(6px); white-space: nowrap; }
-  #roundLbl { font-weight: 900; color: #7fd8ff; letter-spacing: 1px; }
-  .o2box { display: flex; align-items: center; gap: 8px; font-weight: 700; padding: 4px 8px; border-radius: 10px; }
-  .o2box .o2cells { width: 250px; }
-  .o2box .o2num { font-size: 22px; width: 32px; text-align: center; }
+  #top { display: flex; align-items: stretch; justify-content: center; gap: clamp(6px, 1.2vw, 16px); flex-wrap: wrap; }
+  /* 반짝이는 남색 패널 */
+  .hp { position: relative; display: flex; align-items: center; gap: 10px; padding: 6px clamp(10px, 1.4vw, 18px); white-space: nowrap;
+    border-radius: 22px; background: linear-gradient(#17457c, #0a2650 55%, #071b3b); border: 3px solid #4fa6ff;
+    box-shadow: inset 0 2px 0 #ffffff40, inset 0 -3px 8px #0006, 0 0 0 2px #06173188, 0 6px 16px #000a; color: #fff; }
+  .hp::before { content: ''; position: absolute; left: 10px; right: 10px; top: 3px; height: 40%; border-radius: 16px 16px 40% 40%;
+    background: linear-gradient(#ffffff26, transparent); pointer-events: none; }
+  .hcol { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+  .hp small { font-size: clamp(11px, 1.6vh, 14px); font-weight: 800; color: #e8f4ff; }
+  .hp .big { font-size: clamp(18px, 3vh, 26px); font-weight: 900; color: #ffd84a; text-shadow: 0 2px 0 #0008; }
+  #roundBox svg { width: clamp(24px, 3.6vh, 34px); height: auto; }
+  .o2box { gap: 10px; }
+  .o2bub { width: clamp(34px, 5vh, 44px); height: clamp(34px, 5vh, 44px); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: clamp(15px, 2.3vh, 20px); color: #fff; text-shadow: 0 1px 2px #0068;
+    background: radial-gradient(circle at 35% 30%, #c8f2ff, #3fb6ff 45%, #0c66d6 80%); box-shadow: 0 0 0 2px #9fe0ff, 0 0 12px #3fb6ffaa; }
+  .o2bub sub { font-size: .6em; margin-top: .5em; }
+  .o2box .o2num { font-size: clamp(20px, 3.2vh, 28px); font-weight: 900; width: 2ch; text-align: center; }
+  .o2box .o2cells { width: clamp(130px, 17vw, 230px); gap: 2px; padding: 3px; background: #031024; border-radius: 6px; box-shadow: inset 0 1px 3px #000c; }
+  .o2box .o2cell { height: clamp(14px, 2.4vh, 20px); border-radius: 3px; background: linear-gradient(#7dff9e, #22c552); }
+  .o2box .o2cell.off { background: #ffffff14; }
+  .o2box .o2cell.low { background: linear-gradient(#ff8080, #e02020); }
   body.lowair .o2box { animation: lowpulse .6s infinite alternate; }
-  @keyframes lowpulse { to { background: #ff202055; box-shadow: 0 0 16px #ff2020; } }
-  #turnLbl { font-weight: 700; display: flex; align-items: center; gap: 6px; min-width: 120px; }
-  #viewBtn { background: #0f3557; color: #cfe; border: 1px solid #2c6a9c; border-radius: 10px; padding: 6px 10px; }
-  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; }
-
-  #heldBar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; background: #061a30dd; border: 2px solid #1d4e7a;
-    border-radius: 12px; padding: 4px 14px; font-size: 13px; min-height: 36px; backdrop-filter: blur(6px); }
-  #heldBar .who { font-weight: 800; display: flex; align-items: center; gap: 6px; }
-  #heldBar .mini { width: 26px; height: 26px; font-size: 11px; }
-  #heldBar .none { color: #6f8aa3; }
-  #heldBar .cost { color: #ff8f8f; font-weight: 700; margin-left: 4px; }
-  #side { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 6px; }
-  .pl { background: #061a30dd; border: 2px solid #1d4e7a; border-radius: 10px; padding: 4px 10px; font-size: 12px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-  .pl.cur { border-color: #ffe14d; box-shadow: 0 0 10px #ffe14d66; }
-  .pl .pn { font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 5px; }
-  .pl em { font-style: normal; font-size: 10px; background: #2c6a9c; padding: 0 5px; border-radius: 5px; }
-  .pl .ps { color: #9cc7e8; }
-  .pl .ok { color: #3ddc84; font-weight: 700; }
-  .pl .ph { color: #ffd23f; font-weight: 700; }
-  .pl .pc { color: #ffd76a; }
-  @media (max-width: 640px) {
-    #top { flex-wrap: wrap; justify-content: center; gap: 4px 10px; padding: 6px 10px; }
-    .o2box .o2cells { width: 150px; }
-    .o2box .o2num { font-size: 18px; }
-    #viewBtn { padding: 4px 8px; font-size: 12px; }
-    #heldBar { font-size: 12px; padding: 3px 10px; min-height: 30px; }
-    #heldBar .mini { width: 22px; height: 22px; }
-    #side { gap: 4px; }
-    .pl { font-size: 11px; padding: 3px 7px; gap: 5px; }
-    .pl .pn { font-size: 12px; }
-    .pl em { display: none; }
+  @keyframes lowpulse { to { border-color: #ff4040; box-shadow: 0 0 0 2px #06173188, 0 0 22px #ff2020; } }
+  #turnBox { min-width: clamp(120px, 14vw, 180px); justify-content: center; }
+  #turnLbl { display: flex; align-items: center; gap: 6px; font-size: clamp(16px, 2.6vh, 22px); }
+  #turnHeld { font-size: clamp(11px, 1.6vh, 13px); font-weight: 800; color: #bfe0ff; margin-top: 2px; }
+  #turnHeld b { color: #ffd84a; }
+  #heldBox { flex-direction: column; gap: 2px; padding-top: 4px; padding-bottom: 6px; }
+  .tslots { display: flex; gap: clamp(4px, .8vw, 10px); }
+  .tslot { position: relative; display: flex; align-items: center; justify-content: center; width: clamp(48px, 6vw, 72px); height: clamp(30px, 4.4vh, 40px);
+    border-radius: 999px; background: #04142ccc; box-shadow: inset 0 2px 5px #000b; }
+  .tslot .tchip { position: relative; width: 64px; height: 64px; margin: -16px -12px -16px -28px; flex: none; transform: scale(.52); filter: drop-shadow(0 2px 2px #0008); }
+  .tslot .tchip .chip { transform: none !important; }
+  .tslot b { position: absolute; right: 8px; bottom: 0; font-size: clamp(14px, 2.2vh, 19px); font-weight: 900; color: #fff; text-shadow: 0 2px 0 #000; }
+  .tslot.has b { color: #ffd84a; }
+  .tslot:not(.has) .tchip { opacity: .5; filter: grayscale(.5); }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; flex: none; }
+  #viewBtn { position: fixed; right: 14px; bottom: 14px; z-index: 25; display: none; cursor: pointer; font-family: inherit;
+    font-size: clamp(15px, 2.4vh, 20px); font-weight: 900; padding: 8px 18px 8px 12px; }
+  #viewBtn svg { width: clamp(30px, 4.6vh, 42px); height: auto; }
+  #viewBtn:active { transform: translateY(2px); }
+  @media (max-width: 760px) {
+    #top { gap: 5px; }
+    .hp { border-radius: 16px; padding: 4px 9px; gap: 6px; border-width: 2px; }
+    #roundBox svg { display: none; }
+    .o2box .o2cells { width: 120px; }
+    .tslot { width: 44px; }
+    .tslot b { right: 5px; }
   }
   .mini { display: inline-flex; width: 18px; height: 18px; clip-path: var(--clip); align-items: center; justify-content: center;
     font-size: 10px; font-weight: 900; color: #2a1a00; }
 
   #actions { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 30; flex-wrap: wrap; justify-content: center; }
   #actions.center { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
-  #actions.center .dice-btn { font-size: 22px; padding: 18px 34px; white-space: nowrap; }
+  #actions.center .dice-btn { width: clamp(124px, min(24vh, 36vw), 210px); height: clamp(108px, min(21vh, 31vw), 184px); padding: 0; border-radius: 50% 50% 44% 44% / 56% 56% 44% 44%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;
+    font-size: clamp(17px, 2.8vh, 24px); font-weight: 900; text-shadow: 0 2px 0 #0a3a90;
+    background: radial-gradient(ellipse at 50% 18%, #9fe0ff 0, #3c9cff 30%, #1667e6 62%, #0b45b8 100%); border: 4px solid #cdeeff;
+    box-shadow: inset 0 -8px 16px #0a3a9099, inset 0 6px 10px #ffffff66, 0 6px 0 #0a3f9c, 0 12px 30px #0009, 0 0 30px #3fb6ff66; }
+  #actions.center .dice-btn:active { transform: translateY(4px); box-shadow: inset 0 -8px 16px #0a3a9099, 0 2px 0 #0a3f9c; }
+  .dice-btn svg { width: 48%; height: auto; filter: drop-shadow(0 4px 3px #0a2a7080); }
   #centerMsg { position: fixed; left: 50%; top: 50%; z-index: 45; display: none; pointer-events: none;
     font-size: clamp(30px, 6vh, 52px); font-weight: 900; color: #fff; background: #b81d2acc; border: 3px solid #fff; border-radius: 16px; padding: 6px 26px;
     white-space: nowrap; box-shadow: 0 0 30px #ff303088; }
@@ -188,9 +201,9 @@
 
   #dice { pointer-events: none; flex-direction: column; gap: 14px; }
   #dice .row { display: flex; gap: 18px; }
-  .die { width: 50px; height: 50px; background: #fff; border-radius: 12px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px;
+  .die { width: 75px; height: 75px; background: #fff; border-radius: 18px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 12px;
     box-shadow: inset 0 -4px 0 #cfd8e3, 0 7px 20px #000a; }
-  .die i { width: 10px; height: 10px; border-radius: 50%; margin: auto; }
+  .die i { width: 15px; height: 15px; border-radius: 50%; margin: auto; }
   .die i.on { background: #0b2238; }
   #diceCalc { font-size: 18px; font-weight: 900; background: #061a30ee; padding: 8px 22px; border-radius: 14px; border: 2px solid #2c6a9c; min-height: 10px; }
   #diceCalc b { color: #ffe14d; }
@@ -242,10 +255,47 @@
     <div id="decor"></div>
     <svg id="pathSvg" width="1000" height="1000"></svg>
     <div id="sub">
-      <div class="sub-tower"></div>
-      <div class="sub-body">
-        <div class="sub-gauge"><div class="lbl">O₂</div><div class="o2num">25</div><div class="o2cells"></div></div>
-      </div>
+      <svg class="sub-art" viewBox="-70 -70 540 240">
+        <defs><clipPath id="hullClip"><path d="M64,24 L356,24 L356,148 L64,148 A62,62 0 0 1 64,24 Z"/></clipPath></defs>
+        <!-- 꼬리 지느러미 (둥근) -->
+        <path d="M18,56 Q4,30 6,8 Q8,-4 22,-2 Q34,0 44,14 L70,40 Z" fill="#e9ad5b"/>
+        <path d="M18,116 Q4,142 6,164 Q8,176 22,174 Q34,172 44,158 L70,132 Z" fill="#e9ad5b"/>
+        <!-- 프로펠러 -->
+        <g class="prop"><ellipse cx="-22" cy="86" rx="8" ry="26" fill="#e9ad5b"/></g>
+        <ellipse cx="-4" cy="86" rx="11" ry="27" fill="#ef7a5c"/>
+        <ellipse cx="-4" cy="86" rx="6" ry="18" fill="#b9523c"/>
+        <!-- 선체 -->
+        <g clip-path="url(#hullClip)">
+          <rect x="0" y="20" width="360" height="132" fill="#ffd62a"/>
+          <ellipse cx="190" cy="150" rx="230" ry="34" fill="#f4b81a"/>
+          <ellipse cx="180" cy="40" rx="200" ry="22" fill="#ffe36a"/>
+          <ellipse cx="150" cy="38" rx="110" ry="7" fill="#fff" opacity=".35"/>
+          <path d="M66,24 Q52,86 66,148" stroke="#eda81e" stroke-width="3.5" fill="none"/>
+          <path d="M330,24 Q318,86 330,148" stroke="#eda81e" stroke-width="3.5" fill="none"/>
+        </g>
+        <!-- 조종탑 + 잠망경 -->
+        <path d="M200,-6 L200,-36 Q200,-50 214,-50 L228,-50" stroke="#e39f4e" stroke-width="11" stroke-linecap="round" fill="none"/>
+        <rect x="222" y="-64" width="30" height="28" rx="10" fill="#ffd62a"/>
+        <ellipse cx="252" cy="-50" rx="6.5" ry="13" fill="#ef7a5c"/>
+        <ellipse cx="253" cy="-50" rx="3.8" ry="9" fill="#6cc3ef"/>
+        <path d="M150,30 Q156,-2 170,-6 Q200,-14 230,-6 Q244,-2 250,30 Z" fill="#e9ad5b"/>
+        <ellipse cx="200" cy="-5" rx="31" ry="8" fill="#f3c27c"/>
+        <!-- 둥근 창 -->
+        <circle cx="300" cy="86" r="20" fill="#ef7a5c"/>
+        <circle cx="300" cy="86" r="15.5" fill="#9b4535"/>
+        <circle cx="300" cy="86" r="13" fill="#6cc3ef"/>
+        <circle cx="300" cy="90" r="5.5" fill="#3f8fc0" opacity=".7"/><path d="M292,102 Q300,92 308,102 Z" fill="#3f8fc0" opacity=".7"/>
+        <path d="M291,81 A10,10 0 0 1 300,75" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".8"/>
+        <circle cx="336" cy="48" r="3.5" fill="#fff4c2"/>
+        <!-- 유리 돔 (조종석) -->
+        <path d="M352,20 A80,66 0 0 1 352,152 Z" fill="#5fb3e6" opacity=".88"/>
+        <circle cx="388" cy="70" r="9" fill="#3a85b8" opacity=".75"/>
+        <path d="M374,84 Q388,77 400,86 L402,112 L376,112 Z" fill="#3a85b8" opacity=".75"/>
+        <path d="M378,110 L410,110 L414,132 L405,132 L401,119 L380,119 Z" fill="#2f6f9e" opacity=".75"/>
+        <path d="M372,36 A66,52 0 0 1 418,62" stroke="#fff" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".55"/>
+        <ellipse cx="352" cy="86" rx="11" ry="67" fill="none" stroke="#ef7a5c" stroke-width="9"/>
+      </svg>
+      <div class="sub-gauge"><div class="lbl">O₂</div><div class="o2num">25</div><div class="o2cells"></div></div>
     </div>
     <div id="spaces"></div>
     <div id="divers"></div>
@@ -256,16 +306,15 @@
 
 <div id="topStack">
 <div id="top">
-  <div id="roundLbl">ROUND 1 / 3</div>
-  <div class="o2box"><span>산소</span><div class="o2cells"></div><b class="o2num">25</b></div>
-  <div id="turnLbl"></div>
-  <button id="viewBtn">🔍 전체보기</button>
+  <div class="hp" id="roundBox"><svg viewBox="0 0 40 50"><rect x="5" y="3" width="4" height="45" rx="2" fill="#e8eef6"/><path d="M9 5 Q20 1 28 6 Q33 9 38 6 L38 26 Q33 29 28 26 Q20 21 9 25 Z" fill="#fff"/><path d="M9 18 Q20 14 28 19 Q33 22 38 19 L38 26 Q33 29 28 26 Q20 21 9 25 Z" fill="#d6e2f0"/></svg><div class="hcol"><small>라운드</small><b class="big" id="roundLbl">1 / 3</b></div></div>
+  <div class="hp o2box"><div class="o2bub">O<sub>2</sub></div><b class="o2num">25</b><div class="o2cells"></div></div>
+  <div class="hp" id="turnBox"><div class="hcol"><small>현재 플레이어</small><b id="turnLbl">—</b><span id="turnHeld"></span></div></div>
+  <div class="hp" id="heldBox"><small>보유 보물</small><div class="tslots" id="tslots"></div></div>
 </div>
-<div id="heldBar"></div>
-  </div>
+</div>
+<button class="hp" id="viewBtn"><svg viewBox="0 0 54 46"><path d="M3 10 L18 4 L36 10 L51 4 L51 40 L36 46 L18 40 L3 46 Z" fill="#f4e2a8"/><path d="M18 4 L36 10 L36 46 L18 40 Z" fill="#e2c97e"/><path d="M8 30 Q16 22 26 28 T46 22" stroke="#4aa36a" stroke-width="5" fill="none" opacity=".8"/><path d="M8 18 Q14 14 20 18" stroke="#5aa8e0" stroke-width="4" fill="none"/><path d="M38 4 C31 4 29 13 38 22 C47 13 45 4 38 4 Z" fill="#ff4a4a"/><circle cx="38" cy="10" r="3" fill="#fff"/></svg>전체보기</button>
 <div id="actions"></div>
 <div id="centerMsg"></div>
-<div id="hint">드래그: 화면 이동 · 휠/두 손가락: 확대·축소</div>
 
 <!-- 방향 선택 -->
 <div id="dirPick" class="overlay">
@@ -306,7 +355,7 @@
 // ================== 상수 ==================
 const W = 1000, SUB = { x: 500, y: 150 };
 const ROW_Y0 = 300, ROW_H = 130, COLS = 8, X0 = 111, XS = 111;
-const SUB_SLOTS = [320, 370, 420, 580, 630, 680];
+const SUB_SLOTS = [312, 360, 408, 592, 640, 688];
 const LEVEL = {
   1: { c: '#f3d77f', d: '#8a6a1c', clip: 'polygon(50% 4%,96% 92%,4% 92%)' },
   2: { c: '#f2a44c', d: '#80460c', clip: 'polygon(8% 8%,92% 8%,92% 92%,8% 92%)' },
@@ -315,6 +364,8 @@ const LEVEL = {
 };
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
+// HUD 아이콘 (직접 그린 SVG)
+const DICE_ICON = '<svg viewBox="0 0 100 100"><path d="M50 6 L90 26 L90 72 L50 94 L10 72 L10 26 Z" fill="#dfe8f5"/><path d="M50 6 L90 26 L50 46 L10 26 Z" fill="#fff"/><path d="M50 46 L90 26 L90 72 L50 94 Z" fill="#c9d6ea"/><g fill="#1d2f5c"><ellipse cx="50" cy="26" rx="6" ry="3.5"/><ellipse cx="25" cy="44" rx="4" ry="5.5"/><ellipse cx="38" cy="66" rx="4" ry="5.5"/><ellipse cx="25" cy="60" rx="4" ry="5.5" opacity="0"/><ellipse cx="62" cy="54" rx="4" ry="5.5"/><ellipse cx="78" cy="44" rx="4" ry="5.5"/><ellipse cx="62" cy="76" rx="4" ry="5.5"/><ellipse cx="78" cy="66" rx="4" ry="5.5"/></g></svg>';
 const $ = s => document.querySelector(s);
 const wait = ms => new Promise(r => setTimeout(r, ms));
 // 끝나거나 중간에 끊겨도(드래그·확대로 카메라 애니메이션이 kill될 때) 반드시 resolve
@@ -406,27 +457,50 @@ function curveAt(len) {
 function spacePos(i) { return curveAt((i - 1) * CURVE.STEP); } // i: 1부터 (0은 잠수함)
 function worldH() { let m = 0; for (let i = 1; i <= Math.max(1, S.path.length); i++) m = Math.max(m, spacePos(i).y); return m + 140; }
 function diverPos(p) {
-  if (p.pos === 0) return { x: SUB_SLOTS[p.idx], y: 112 };
+  if (p.pos === 0) return { x: SUB_SLOTS[p.idx], y: 98 };
   const s = spacePos(p.pos); return { x: s.x, y: s.y - 44 };
 }
 // 화면에서 HUD를 뺀 '보이는 영역'
 const HUD_BOTTOM = 96;
 function hudTop() { const el = $('#topStack'); return el.offsetParent !== null || getComputedStyle(el).display !== 'none' ? el.getBoundingClientRect().bottom + 6 : 70; }
 function viewCenter() { return { x: innerWidth / 2, y: hudTop() + (innerHeight - hudTop() - HUD_BOTTOM) / 2 }; }
+// 바다(#world)가 상단 HUD 아래에 딱 붙어 있고, 좌우·아래로 빈 공간이 생기지 않게 위치 보정
+function clampXY(x, y, s) {
+  const top = hudTop() + 4, Wd = W * s, Hd = world.offsetHeight * s;
+  x = Wd <= innerWidth ? (innerWidth - Wd) / 2 : Math.min(0, Math.max(innerWidth - Wd, x));
+  y = Hd <= innerHeight - top ? top : Math.min(top, Math.max(innerHeight - Hd, y));
+  return { x, y };
+}
+function setCam(o) {
+  gsap.set(world, o);
+  const c = clampXY(gsap.getProperty(world, 'x'), gsap.getProperty(world, 'y'), gsap.getProperty(world, 'scale'));
+  gsap.set(world, { x: c.x, y: c.y });
+}
 function camTo(wx, wy, s, dur = .8, ease = 'power2.inOut') {
   const c = viewCenter();
   // 카메라 이동은 사용자가 드래그·확대하면 언제든 끊길 수 있으므로,
   // 완료·중단 이벤트와 별개로 '시간이 지나면 무조건' 다음 단계로 넘어가게 한다.
   return new Promise(r => {
     let done = false; const fin = () => { if (!done) { done = true; r(); } };
-    gsap.to(world, { x: c.x - wx * s, y: c.y - wy * s, scale: s, duration: dur, ease, onComplete: fin, onInterrupt: fin });
+    const t = clampXY(c.x - wx * s, c.y - wy * s, s);
+    gsap.to(world, { x: t.x, y: t.y, scale: s, duration: dur, ease, onComplete: fin, onInterrupt: fin,
+      onUpdate: () => { const k = clampXY(gsap.getProperty(world, 'x'), gsap.getProperty(world, 'y'), gsap.getProperty(world, 'scale')); gsap.set(world, { x: k.x, y: k.y }); } });
     setTimeout(fin, dur * 1000 / Math.max(.01, gsap.globalTimeline.timeScale()) + 120);
   });
 }
 function overviewScale() {
   return Math.min((innerWidth - 32) / W, (innerHeight - hudTop() - HUD_BOTTOM - 16) / worldH());
 }
-function camOverview(dur = .8) { return camTo(W / 2, worldH() / 2, overviewScale(), dur); }
+// 전체보기: 보드가 화면에 다 들어오게 맞추고, 바다는 HUD 아래부터 화면 맨 아래까지 채운다
+function overviewFit() {
+  const top = hudTop() + 4, h = innerHeight - top, s = Math.min((innerWidth - 32) / W, h / worldH());
+  return { s, top, H: h / s };
+}
+function seaH() { return Math.max(worldH(), overviewFit().H); }
+function camOverview(dur = .8) {
+  const f = overviewFit(); world.style.height = seaH() + 'px';
+  return camTo(W / 2, (viewCenter().y - f.top) / f.s, f.s, dur);
+}
 // 기본 배율: 전체보기의 150%. 지정 지점(기본: 현재 플레이어)을 중심으로, 보드 밖이 보이지 않게 보정
 function homeScale() { return overviewScale() * 1.5; }
 function clampView(wx, wy, s) {
@@ -453,7 +527,7 @@ function follow(p, dur = .4) {
   const zoomAt = (cx, cy, ns, from) => {
     ns = Math.min(3, Math.max(.3, ns));
     const wx = (cx - from.x) / from.s, wy = (cy - from.y) / from.s;
-    gsap.set(world, { scale: ns, x: cx - wx * ns, y: cy - wy * ns });
+    setCam({ scale: ns, x: cx - wx * ns, y: cy - wy * ns });
   };
   const cur = () => ({ x: gsap.getProperty(world, 'x'), y: gsap.getProperty(world, 'y'), s: gsap.getProperty(world, 'scale') });
   const snapshot = () => { // 손가락 수가 바뀔 때마다 기준 재설정
@@ -471,12 +545,12 @@ function follow(p, dur = .4) {
     if (!pts.has(e.pointerId) || !base) return;
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     const a = [...pts.values()];
-    if (base.mode === 'pan') gsap.set(world, { x: base.x + a[0].x - base.px, y: base.y + a[0].y - base.py });
+    if (base.mode === 'pan') setCam({ x: base.x + a[0].x - base.px, y: base.y + a[0].y - base.py });
     else if (a.length >= 2) {
       const d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y), mx = (a[0].x + a[1].x) / 2, my = (a[0].y + a[1].y) / 2;
       // 두 손가락 중심 기준 확대 + 중심 이동만큼 함께 이동
       zoomAt(base.mx, base.my, base.s * d / base.d, base);
-      gsap.set(world, { x: gsap.getProperty(world, 'x') + mx - base.mx, y: gsap.getProperty(world, 'y') + my - base.my });
+      setCam({ x: gsap.getProperty(world, 'x') + mx - base.mx, y: gsap.getProperty(world, 'y') + my - base.my });
     }
   });
   const end = e => { pts.delete(e.pointerId); if (!pts.size) vp.classList.remove('dragging'); snapshot(); };
@@ -504,7 +578,8 @@ function renderSpace(sp, el) { el.innerHTML = sp.type === 'chip' ? chipHTML(sp.c
 
 function layout(animate = true) {
   const ids = new Set();
-  world.style.height = worldH() + 'px';
+  world.style.height = seaH() + 'px';
+  if (!gsap.isTweening(world)) setCam({}); // 바다 높이가 바뀌면 위치 다시 보정
   S.path.forEach((sp, i) => {
     ids.add(sp.id);
     const p = spacePos(i + 1);
@@ -569,16 +644,14 @@ function miniStack(st, showVal) {
   return `<span class="mini" style="--clip:${L.clip};background:${L.c}">${label}</span>`;
 }
 function renderHUD() {
-  $('#roundLbl').textContent = `ROUND ${S.round} / 3`;
+  $('#roundLbl').textContent = `${S.round} / 3`;
   const cur = S.players[S.cur];
-  $('#turnLbl').innerHTML = cur ? `<span class="dot" style="background:${cur.color}"></span>${cur.name}의 차례` : '';
-  // 현재 플레이어가 들고 있는 보물 전체
-  $('#heldBar').style.display = cur ? 'flex' : 'none';
-  if (cur) {
-    const n = cur.held.length;
-    $('#heldBar').innerHTML = `<span class="who"><span class="dot" style="background:${cur.color}"></span>${cur.name} 보유 보물</span>` +
-      (n ? cur.held.map(st => miniStack(st)).join('') + `<span class="cost">· 매 턴 산소 −${n} · 이동 −${n}</span>` : '<span class="none">없음</span>');
-  }
+  $('#turnLbl').innerHTML = cur ? `<span class="dot" style="background:${cur.color}"></span>${cur.name}` : '—';
+  // 현재 플레이어가 들고 있는 보물: 종류(레벨)별 개수 — 잃은 보물 묶음은 가장 높은 레벨 1개로 셈
+  const cnt = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  if (cur) cur.held.forEach(st => cnt[Math.max(...st.map(c => c.level))]++);
+  $('#turnHeld').innerHTML = cur ? `보물 <b>${cur.held.length}</b>개` : '&nbsp;';
+  $('#tslots').innerHTML = [1, 2, 3, 4].map(l => `<span class="tslot${cnt[l] ? ' has' : ''}"><span class="tchip">${chipHTML([{ level: l }])}</span><b>${cnt[l]}</b></span>`).join('');
   S.players.forEach(updateDiver);
 }
 
@@ -744,6 +817,54 @@ function seaCenter() {
   if (right - left < 80 || bottom - top < 80) return viewCenter();
   return { x: (left + right) / 2, y: (top + bottom) / 2 };
 }
+// 중앙 버튼(주사위 굴리기 등)은 카메라가 움직이는 동안에도 계속 '보이는 바다'의 가운데를 따라간다
+function placeCenterActions() {
+  const box = $('#actions');
+  if (!box.classList.contains('center') || !box.children.length) return;
+  const c = seaCenter(); box.style.left = c.x + 'px'; box.style.top = c.y + 'px';
+}
+gsap.ticker.add(placeCenterActions);
+// 상단 HUD 크기가 바뀌면 바다 위치·높이를 다시 맞춤
+// 매 프레임: 바다 높이가 보드·HUD 변화에 맞는지, 바다가 HUD에서 떨어지거나 빈 공간이 생기지 않았는지 확인
+gsap.ticker.add(() => {
+  if (!S.players.length) return;
+  const h = Math.round(seaH()); if (Math.abs(world.offsetHeight - h) > 1) world.style.height = h + 'px';
+  if (gsap.isTweening(world)) return;
+  const x = gsap.getProperty(world, 'x'), y = gsap.getProperty(world, 'y'), c = clampXY(x, y, gsap.getProperty(world, 'scale'));
+  if (Math.abs(c.x - x) > .5 || Math.abs(c.y - y) > .5) gsap.set(world, { x: c.x, y: c.y });
+});
+
+// ================== 화면 꺼짐 방지 ==================
+// Wake Lock API(지원 브라우저) → 안 되면 무음 영상 재생으로 대체. 탭에 다시 돌아오면 재요청.
+const KeepAwake = {
+  lock: null, video: null,
+  async on() {
+    try {
+      if ('wakeLock' in navigator) {
+        if (!this.lock || this.lock.released) this.lock = await navigator.wakeLock.request('screen');
+        return;
+      }
+    } catch (e) { /* 미지원·거부 시 대체 방법 사용 */ }
+    this.fallback();
+  },
+  fallback() {
+    try {
+      if (!this.video) {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 2;
+        const g = cv.getContext('2d'); let t = 0;
+        setInterval(() => { g.fillStyle = (t++ % 2) ? '#000' : '#010101'; g.fillRect(0, 0, 2, 2); }, 1000);
+        const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.loop = true;
+        v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
+        v.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:0;top:0';
+        v.srcObject = cv.captureStream(1); document.body.appendChild(v); this.video = v;
+      }
+      this.video.play().catch(() => {});
+    } catch (e) {}
+  },
+};
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') KeepAwake.on(); });
+['pointerdown', 'touchend', 'click'].forEach(ev => addEventListener(ev, () => KeepAwake.on(), { passive: true }));
+
 function choose(options, center = false) { // [{label, cls, value}] / center: 화면 중앙에 표시
   return new Promise(r => {
     clearActions();
@@ -957,7 +1078,7 @@ async function playTurn(p) {
   } else await dirBanner('up', `${p.name} 귀환 중`, true);
 
   // 3. 주사위 & 이동
-  if (!p.isAI) await choose([{ label: '🎲 주사위 굴리기', cls: 'gold dice-btn', value: 1 }], true); else await wait(300);
+  if (!p.isAI) await choose([{ label: DICE_ICON + '주사위 굴리기', cls: 'dice-btn', value: 1 }], true); else await wait(300);
   const steps = await rollDice(p);
   if (steps > 0) await moveDiver(p, steps);
   else { await follow(p); floatText(diverPos(p).x, diverPos(p).y - 40, '너무 무거워서 움직일 수 없다…', '#ffb37a', 18); await wait(1000); }
@@ -1156,7 +1277,7 @@ async function startGame() {
   const order = await rouletteOrder(list);
   S.players = order.map((c, i) => ({ idx: i, ...c, pos: 0, dir: 'down', held: [], scored: [], returned: false }));
   S.path = makeChips(); S.air = 25; S.round = 1; S.start = 0; S.cur = -1;
-  $('#topStack').style.display = 'flex'; S.alarmShown = false;
+  $('#topStack').style.display = 'flex'; $('#viewBtn').style.display = 'flex'; S.alarmShown = false;
   buildDivers(); layout(false); updateGauges(25); renderHUD();
   await camHome(0, { x: SUB.x, y: SUB.y + 80 });
   gsap.from('#spaces .space', { scale: 0, duration: .4, stagger: .02, ease: 'back.out(2)' });
@@ -1169,7 +1290,7 @@ buildGauges(); renderSetup(); layout(false); ambient();
 camOverview(0);
 $('#startBtn').onclick = startGame;
 $('#viewBtn').onclick = () => camOverview(.6);
-addEventListener('resize', () => ($('#setup').classList.contains('show') ? camOverview(0) : camHome(0)));
+addEventListener('resize', () => (world.style.height = seaH() + 'px', setCam({}), $('#setup').classList.contains('show') ? camOverview(0) : camHome(0)));
 </script>
 </body>
 </html>
