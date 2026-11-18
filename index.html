@@ -168,6 +168,7 @@
   .btn.green { background: #1fae63; box-shadow: 0 5px 0 #0d6b3a, 0 8px 20px #0008; }
 
   /* ---------- 오버레이 ---------- */
+  .foot { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #8fb3d0; font-size: 12px; opacity: .8; pointer-events: none; }
   .overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 50; }
   #dirPick { background: #0008; flex-direction: column; gap: 12px; }
   #dirPick .who { font-size: clamp(17px, 2.8vh, 22px); font-weight: 900; text-shadow: 0 2px 8px #000; }
@@ -213,17 +214,30 @@
   #setup, #summary, #final { background: radial-gradient(ellipse at top, #0f4a7a, #020a18 70%); display: none; }
   #setup.show, #summary.show, #final.show, #roulette.show { display: flex; }
   #roulette { background: #000b; }
-  .rchips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .rchip { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 12px; background: #0b2a48; border: 2px solid #2c6a9c; font-weight: 800; font-size: 16px; }
+  .rchips { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 8px; }
+  .rchip { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; border-radius: 12px; background: #0b2a48; border: 2px solid #2c6a9c;
+    font-weight: 800; font-size: 16px; white-space: nowrap; min-width: 0; }
   .rchip.hi { background: #ffe14d; color: #3a2500; border-color: #fff; box-shadow: 0 0 22px #ffe14d; transform: scale(1.12); }
   .rchip.done { opacity: .25; }
-  .rorder { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+  .rorder { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 18px; }
   .rord { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; background: #0b2a48; border-radius: 10px; padding: 6px 12px; }
   .rord .num { width: 28px; height: 28px; border-radius: 50%; background: #1e7bff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
   .rord.first { background: #4a3b05; border: 2px solid #ffe14d; }
   .rord.first .num { background: #ffb800; color: #3a2500; }
   .rnum { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #1e7bff; color: #fff; font-size: 12px; align-items: center; justify-content: center; }
   .rbtn { margin-top: 14px; }
+  @media (max-width: 560px) {   /* 모바일 세로: 차례 화면을 낮게 */
+    #roulette .panel { padding: 18px 14px; }
+    #roulette h2 { margin: 0 0 12px; }
+    .rchips { padding: 0 6px; }   /* 강조(확대)된 칩이 테두리에 닿지 않게 */
+    .rchip { padding: 7px 4px; gap: 4px; font-size: 14px; }
+    .rchip .dot { width: 10px; height: 10px; }
+    .rchip .rnum { width: 19px; height: 19px; font-size: 11px; }
+    .rorder { grid-template-columns: 1fr 1fr; grid-auto-flow: column; grid-template-rows: repeat(var(--rows, 3), auto); margin-top: 12px; }
+    .rord { font-size: 15px; gap: 6px; padding: 5px 8px; white-space: nowrap; min-width: 0; }
+    .rord .num { width: 24px; height: 24px; flex: none; }
+    .rmsg { font-size: 18px; margin-top: 12px; }
+  }
   .rmsg { text-align: center; margin-top: 16px; font-size: 20px; font-weight: 900; color: #ffe14d; min-height: 26px; }
   #summary, #final { background: #000c; }
   .panel { background: #071d35; border: 2px solid #2c6a9c; border-radius: 24px; padding: 28px 34px; width: min(520px, 92vw); box-shadow: 0 20px 80px #000; }
@@ -348,6 +362,7 @@
       · 잠수함에 돌아오지 못하면 보물을 모두 잃습니다. 3라운드 합계 점수로 승부!
     </div>
   </div>
+  <div class="foot" id="foot"></div>
 </div>
 <div id="roulette" class="overlay"><div class="panel"><h2>🎯 차례 정하기</h2><div class="rchips"></div><div class="rorder"></div><div class="rmsg"></div><div class="rbtn center"></div></div></div>
 <div id="summary" class="overlay"><div class="panel" id="summaryPanel"></div></div>
@@ -364,6 +379,8 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
+const VERSION = '1.0';
+const BUILD_DATE = '2026-11-18';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
 // HUD 아이콘 (직접 그린 SVG)
@@ -1227,6 +1244,8 @@ async function rouletteOrder(list) {
   const ov = $('#roulette'), chips = $('#roulette .rchips'), ord = $('#roulette .rorder'), msg = $('#roulette .rmsg');
   ord.innerHTML = ''; msg.textContent = '';
   chips.innerHTML = list.map((p, i) => `<div class="rchip"><span class="dot" style="background:${p.color}"></span>${p.name}</div>`).join('');
+  chips.style.setProperty('--cols', list.length === 4 ? 2 : Math.min(list.length, 3));   // 3명씩(4명은 2명씩) 줄 맞춤
+  ord.style.setProperty('--rows', Math.ceil(list.length / 2));
   ov.classList.add('show');
   const els = [...chips.children];
   gsap.from('#roulette .panel', { scale: .8, opacity: 0, duration: .35, ease: 'back.out(2)' });
@@ -1291,6 +1310,7 @@ async function startGame() {
 buildGauges(); renderSetup(); layout(false); ambient();
 camOverview(0);
 $('#startBtn').onclick = startGame;
+$('#foot').textContent = `v${VERSION} · ${BUILD_DATE}`;
 $('#viewBtn').onclick = () => camOverview(.6);
 addEventListener('resize', () => (world.style.height = seaH() + 'px', setCam({}), $('#setup').classList.contains('show') ? camOverview(0) : camHome(0)));
 </script>

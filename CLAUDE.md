@@ -5,6 +5,11 @@
 ## 작업 방식
 
 - 수정하면 먼저 `index.html` 파일을 경훈에게 보여 준다. **커밋·푸시는 경훈이 요청할 때만** 한다(아티팩트 갱신도 요청 시에만).
+- 푸시할 때마다:
+  - `index.html`의 `VERSION`을 0.1씩 올린다 (예: 1.0 → 1.1). 경훈이 버전을 지정하면 그 값을 쓴다.
+  - `BUILD_DATE`를 푸시하는 날짜(`yyyy-mm-dd`, 한국 시간)로 바꾼다. 시작 화면 맨 아래 가운데에 `v버전 · 날짜`로 표시된다.
+  - claude.ai 아티팩트 '해저탐험'도 같은 HTML로 갱신한다 (https://claude.ai/artifact/S658b8p1FUnjpu7nYDingy).
+  - README.md의 버전 표에 한 줄 추가한다.
 
 ## 구조
 
@@ -20,7 +25,7 @@
 - 렌더: `layout()`(칸 DOM을 id 기준으로 재사용·애니메이션), `buildDivers()/updateDiver()`, `renderHUD()`(상단 산소 게이지 + 현재 플레이어 보유 보물 줄).
 - 카메라: `#world`에 GSAP x/y/scale. `camOverview()`(전체 맞춤), `camHome()`(기본 배율 = 전체의 **150%**, 현재 플레이어 중심, 보드 밖 안 보이게 보정), `follow()`(줌 없이 화면 밖일 때만 이동), `setupPan()`(드래그·휠·두 손가락 핀치).
 - 턴 흐름: `gameLoop()` → `playTurn(p)` → `oxygenStep` → 방향(`askDirection` / `aiDir`) → `rollDice` → `moveDiver` → 탐색(`digStep` / `dropStep` / `aiSearch`) → `endRound()` → `showFinal()`.
-- 시작: `startGame()` → `rouletteOrder()`(1번만 룰렛, 나머지 랜덤, 시작 버튼).
+- 시작: `startGame()` → `rouletteOrder()`(1번만 룰렛, 나머지 랜덤, 시작 버튼). 차례 화면 이름 칸은 3명씩(4명은 2명씩) 줄 맞춤, 휴대폰 세로(≤560px)에서는 순서 목록 2단.
 - 배경: `ambient()`(거품·작은 물고기) + `sealife()`(상어·바다거북 SVG `swimmer`).
 
 ## 확정된 규칙 해석 (바꾸지 말 것)
