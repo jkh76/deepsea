@@ -141,7 +141,7 @@
 
   #actions { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 30; flex-wrap: wrap; justify-content: center; }
   #actions.center { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
-  #actions.center .dice-btn { font-size: 22px; padding: 18px 34px; }
+  #actions.center .dice-btn { font-size: 22px; padding: 18px 34px; white-space: nowrap; }
   #centerMsg { position: fixed; left: 50%; top: 50%; z-index: 45; display: none; pointer-events: none;
     font-size: clamp(30px, 6vh, 52px); font-weight: 900; color: #fff; background: #b81d2acc; border: 3px solid #fff; border-radius: 16px; padding: 6px 26px;
     white-space: nowrap; box-shadow: 0 0 30px #ff303088; }
@@ -736,10 +736,20 @@ async function alarm() {
 
 // ================== 버튼 ==================
 function clearActions() { $('#actions').innerHTML = ''; }
+// 화면에 보이는 바다(게임판) 영역의 중앙 좌표
+function seaCenter() {
+  const r = world.getBoundingClientRect();
+  const left = Math.max(r.left, 0), right = Math.min(r.right, innerWidth);
+  const top = Math.max(r.top, hudTop()), bottom = Math.min(r.bottom, innerHeight);
+  if (right - left < 80 || bottom - top < 80) return viewCenter();
+  return { x: (left + right) / 2, y: (top + bottom) / 2 };
+}
 function choose(options, center = false) { // [{label, cls, value}] / center: 화면 중앙에 표시
   return new Promise(r => {
     clearActions();
     const box = $('#actions'); box.classList.toggle('center', center);
+    if (center) { const c = seaCenter(); box.style.left = c.x + 'px'; box.style.top = c.y + 'px'; }
+    else { box.style.left = ''; box.style.top = ''; }
     options.forEach((o, i) => {
       const b = document.createElement('button'); b.className = 'btn ' + (o.cls || ''); b.innerHTML = o.label;
       b.onclick = () => { SFX.click(); clearActions(); r(o.value); };
