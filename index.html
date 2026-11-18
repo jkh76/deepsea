@@ -76,18 +76,20 @@
   @keyframes lidopen { from { transform: translateY(0) rotate(0); } 60% { transform: translateY(-5px) rotate(-22deg); } to { transform: translateY(-3px) rotate(-14deg); } }
 
   /* ---------- 잠수부 ---------- */
-  .diver { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: var(--pc);
-    border: 3px solid #fff; box-shadow: 0 4px 12px #000a; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 5; }
+  .diver { position: absolute; left: 0; top: 0; width: 62px; height: 62px; margin: -31px 0 0 -31px; border-radius: 50%; background: var(--pc);
+    border: 3px solid #fff; box-shadow: 0 4px 12px #000a; display: flex; align-items: center; justify-content: center; font-size: 33px; z-index: 5;
+    transition: width .3s, height .3s, margin .3s, font-size .3s; }
+  .diver.onsub { width: 48px; height: 48px; margin: -24px 0 0 -24px; font-size: 25px; }   /* 잠수함 위에서는 자리가 좁아 작게 */
   .diver.active { box-shadow: 0 0 0 4px #ffe14d, 0 0 26px #ffe14d; z-index: 6; }
-  .diver .arr { position: absolute; left: -16px; top: 50%; width: 26px; height: 26px; margin-top: -13px; border-radius: 50%; border: 2px solid #fff;
-    display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; color: #fff; box-shadow: 0 2px 6px #0009; }
+  .diver .arr { position: absolute; left: -20px; top: 50%; width: 30px; height: 30px; margin-top: -15px; border-radius: 50%; border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 900; color: #fff; box-shadow: 0 2px 6px #0009; }
   .diver .arr.down { background: #1e7bff; }
   .diver .arr.up { background: #ff7a1a; }
   .hudpop { position: fixed; z-index: 25; font-weight: 900; font-size: 18px; color: #ff8080; text-shadow: 0 2px 0 #000, 0 0 8px #000; pointer-events: none; white-space: nowrap; }
-  .diver .cnt { position: absolute; top: -14px; right: -14px; min-width: 27px; height: 27px; border-radius: 14px; padding: 0 4px; background: #ffd23f; color: #3a2500;
-    font-size: 16px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #3a2500; }
-  .diver .ord { position: absolute; bottom: -12px; right: -12px; width: 24px; height: 24px; border-radius: 50%; background: #0b2238; color: #fff;
-    font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px #0009; }   /* 차례 번호 */
+  .diver .cnt { position: absolute; top: -12px; right: -12px; min-width: 30px; height: 30px; border-radius: 15px; padding: 0 4px; background: #ffd23f; color: #3a2500;
+    font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #3a2500; }
+  .diver .ord { position: absolute; bottom: -10px; right: -10px; width: 27px; height: 27px; border-radius: 50%; background: #0b2238; color: #fff;
+    font-size: 15px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px #0009; }   /* 차례 번호 */
   .axe { position: absolute; left: 0; top: 0; font-size: 34px; margin: -17px 0 0 -17px; }
   .dust { position: absolute; left: 0; top: 0; border-radius: 50%; background: #d9c08a; }
   .spark { position: absolute; left: 0; top: 0; color: #ffe680; font-size: 18px; text-shadow: 0 0 8px #ffd000; }
@@ -382,7 +384,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.2';
+const VERSION = '1.3';
 const BUILD_DATE = '2026-11-18';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -480,7 +482,7 @@ function spacePos(i) { return curveAt((i - 1) * CURVE.STEP); } // i: 1부터 (0�
 function worldH() { let m = 0; for (let i = 1; i <= Math.max(1, S.path.length); i++) m = Math.max(m, spacePos(i).y); return m + 140; }
 function diverPos(p) {
   if (p.pos === 0) return { x: SUB_SLOTS[p.idx], y: 98 };
-  const s = spacePos(p.pos); return { x: s.x, y: s.y - 44 };
+  const s = spacePos(p.pos); return { x: s.x, y: s.y - 30 };   // 보물 칸 위쪽 절반에 겹쳐 앉기
 }
 // 화면에서 HUD를 뺀 '보이는 영역'
 const HUD_BOTTOM = 96;
@@ -649,6 +651,7 @@ function updateDiver(p) {
   }
   cnt.style.display = p.held.length ? 'flex' : 'none'; cnt.textContent = p.held.length;
   el.classList.toggle('active', p.idx === S.cur);
+  el.classList.toggle('onsub', p.pos === 0);
 }
 
 function buildGauges() {
