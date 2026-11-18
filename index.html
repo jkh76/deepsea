@@ -19,6 +19,7 @@
   #world { position: absolute; left: 0; top: 0; width: 1000px; transform-origin: 0 0; border-radius: 28px; overflow: hidden;
     background: linear-gradient(#49b6e3 0%, #1f78ad 16%, #0f4878 40%, #072648 70%, #020c1f 100%);
     box-shadow: 0 0 0 4px #0a2a4a, 0 30px 120px #000; }
+  #world.moving { will-change: transform; }   /* 카메라 이동 중에만 GPU 레이어로 → 줌 때 끊김·깜빡임 방지, 끝나면 다시 선명하게 */
   #rays { position: absolute; left: 0; top: 0; width: 100%; height: 520px; pointer-events: none; opacity: .18;
     background: repeating-linear-gradient(100deg, transparent 0 60px, #fff 60px 90px, transparent 90px 170px);
     mask-image: linear-gradient(#000, transparent); -webkit-mask-image: linear-gradient(#000, transparent); }
@@ -379,7 +380,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.0';
+const VERSION = '1.1';
 const BUILD_DATE = '2026-11-18';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -500,7 +501,8 @@ function camTo(wx, wy, s, dur = .8, ease = 'power2.inOut') {
   // 카메라 이동은 사용자가 드래그·확대하면 언제든 끊길 수 있으므로,
   // 완료·중단 이벤트와 별개로 '시간이 지나면 무조건' 다음 단계로 넘어가게 한다.
   return new Promise(r => {
-    let done = false; const fin = () => { if (!done) { done = true; r(); } };
+    world.classList.add('moving');
+    let done = false; const fin = () => { if (!done) { done = true; r(); requestAnimationFrame(() => { if (!gsap.isTweening(world)) world.classList.remove('moving'); }); } };
     const t = clampXY(c.x - wx * s, c.y - wy * s, s);
     gsap.to(world, { x: t.x, y: t.y, scale: s, duration: dur, ease, onComplete: fin, onInterrupt: fin,
       onUpdate: () => { const k = clampXY(gsap.getProperty(world, 'x'), gsap.getProperty(world, 'y'), gsap.getProperty(world, 'scale')); gsap.set(world, { x: k.x, y: k.y }); } });
@@ -1009,7 +1011,7 @@ async function digStep(p) {
     SFX.dig(); dust(pos.x, pos.y + 6, 12);
     gsap.fromTo(el, { x: pos.x - 6 }, { x: pos.x, duration: .35, ease: 'elastic.out(4,.3)' });
     gsap.fromTo(dEl, { rotation: k % 2 ? 10 : -10 }, { rotation: 0, duration: .3 });
-    gsap.fromTo(world, { y: `+=3` }, { y: `-=3`, duration: .08 });
+    gsap.fromTo('#spaces, #divers, #fx', { y: 3 }, { y: 0, duration: .12, ease: 'power1.out' });   // 바다 판 전체가 아니라 안쪽만 흔들어 가장자리가 드러나지 않게
     await tween(axe, { rotation: -50, duration: .2, ease: 'power2.out' });
   }
   await tween(axe, { opacity: 0, duration: .15 }); axe.remove();

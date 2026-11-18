@@ -23,7 +23,7 @@
 - 플레이어: `{idx, name, isAI, color, pos(0=잠수함), dir:'down'|'up', held:[stack], scored:[stack], returned}`. stack은 칩 배열(잃은 보물 묶음은 3개짜리 stack, 1개로 취급).
 - 보드 배치: `CURVE` 설정 + `curvePts`(물결 가로줄 + 반원 U턴) → `spacePos(i)`가 곡선 길이 `STEP` 간격으로 좌표 반환. `worldH()`, `drawPath()`.
 - 렌더: `layout()`(칸 DOM을 id 기준으로 재사용·애니메이션), `buildDivers()/updateDiver()`, `renderHUD()`(상단 산소 게이지 + 현재 플레이어 보유 보물 줄).
-- 카메라: `#world`에 GSAP x/y/scale. `camOverview()`(전체 맞춤), `camHome()`(기본 배율 = 전체의 **150%**, 현재 플레이어 중심, 보드 밖 안 보이게 보정), `follow()`(줌 없이 화면 밖일 때만 이동), `setupPan()`(드래그·휠·두 손가락 핀치).
+- 카메라: `#world`에 GSAP x/y/scale. `camOverview()`(전체 맞춤), `camHome()`(기본 배율 = 전체의 **150%**, 현재 플레이어 중심, 보드 밖 안 보이게 보정), `follow()`(줌 없이 화면 밖일 때만 이동), `setupPan()`(드래그·휠·두 손가락 핀치). `camTo` 동안만 `#world.moving`(will-change: transform)을 붙여 줌을 부드럽게 하고, 끝나면 떼서 다시 선명하게 그린다. 흔들기 연출은 `#world`가 아니라 안쪽 레이어(`#spaces, #divers, #fx`)에만 준다(가장자리 노출 방지).
 - 턴 흐름: `gameLoop()` → `playTurn(p)` → `oxygenStep` → 방향(`askDirection` / `aiDir`) → `rollDice` → `moveDiver` → 탐색(`digStep` / `dropStep` / `aiSearch`) → `endRound()` → `showFinal()`.
 - 시작: `startGame()` → `rouletteOrder()`(1번만 룰렛, 나머지 랜덤, 시작 버튼). 차례 화면 이름 칸은 3명씩(4명은 2명씩) 줄 맞춤, 휴대폰 세로(≤560px)에서는 순서 목록 2단.
 - 배경: `ambient()`(거품·작은 물고기) + `sealife()`(상어·바다거북 SVG `swimmer`).
