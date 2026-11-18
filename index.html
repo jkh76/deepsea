@@ -86,6 +86,8 @@
   .hudpop { position: fixed; z-index: 25; font-weight: 900; font-size: 18px; color: #ff8080; text-shadow: 0 2px 0 #000, 0 0 8px #000; pointer-events: none; white-space: nowrap; }
   .diver .cnt { position: absolute; top: -14px; right: -14px; min-width: 27px; height: 27px; border-radius: 14px; padding: 0 4px; background: #ffd23f; color: #3a2500;
     font-size: 16px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #3a2500; }
+  .diver .ord { position: absolute; bottom: -12px; right: -12px; width: 24px; height: 24px; border-radius: 50%; background: #0b2238; color: #fff;
+    font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px #0009; }   /* 차례 번호 */
   .axe { position: absolute; left: 0; top: 0; font-size: 34px; margin: -17px 0 0 -17px; }
   .dust { position: absolute; left: 0; top: 0; border-radius: 50%; background: #d9c08a; }
   .spark { position: absolute; left: 0; top: 0; color: #ffe680; font-size: 18px; text-shadow: 0 0 8px #ffd000; }
@@ -380,7 +382,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.1';
+const VERSION = '1.2';
 const BUILD_DATE = '2026-11-18';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -631,7 +633,7 @@ function buildDivers() {
   S.players.forEach(p => {
     const el = document.createElement('div'); el.className = 'diver';
     el.style.setProperty('--pc', p.color);
-    el.innerHTML = '🤿<div class="arr"></div><div class="cnt" style="display:none"></div>';
+    el.innerHTML = `🤿<div class="arr"></div><div class="cnt" style="display:none"></div><div class="ord">${p.idx + 1}</div>`;
     $('#divers').appendChild(el); diverEls[p.idx] = el;
     const d = diverPos(p); gsap.set(el, { x: d.x, y: d.y });
   });
