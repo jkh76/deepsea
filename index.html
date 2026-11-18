@@ -317,7 +317,8 @@ const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'
 
 const $ = s => document.querySelector(s);
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const tween = (t, v) => new Promise(r => gsap.to(t, { ...v, onComplete: r }));
+// 끝나거나 중간에 끊겨도(드래그·확대로 카메라 애니메이션이 kill될 때) 반드시 resolve
+const tween = (t, v) => new Promise(r => gsap.to(t, { ...v, onComplete: r, onInterrupt: r }));
 const r3 = () => 1 + Math.floor(Math.random() * 3); // 주사위 면: 1,1,2,2,3,3
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
@@ -414,7 +415,13 @@ function hudTop() { const el = $('#topStack'); return el.offsetParent !== null |
 function viewCenter() { return { x: innerWidth / 2, y: hudTop() + (innerHeight - hudTop() - HUD_BOTTOM) / 2 }; }
 function camTo(wx, wy, s, dur = .8, ease = 'power2.inOut') {
   const c = viewCenter();
-  return tween(world, { x: c.x - wx * s, y: c.y - wy * s, scale: s, duration: dur, ease });
+  // 카메라 이동은 사용자가 드래그·확대하면 언제든 끊길 수 있으므로,
+  // 완료·중단 이벤트와 별개로 '시간이 지나면 무조건' 다음 단계로 넘어가게 한다.
+  return new Promise(r => {
+    let done = false; const fin = () => { if (!done) { done = true; r(); } };
+    gsap.to(world, { x: c.x - wx * s, y: c.y - wy * s, scale: s, duration: dur, ease, onComplete: fin, onInterrupt: fin });
+    setTimeout(fin, dur * 1000 / Math.max(.01, gsap.globalTimeline.timeScale()) + 120);
+  });
 }
 function overviewScale() {
   return Math.min((innerWidth - 32) / W, (innerHeight - hudTop() - HUD_BOTTOM - 16) / worldH());
