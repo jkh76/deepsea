@@ -464,7 +464,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '2.0';
+const VERSION = '2.1';
 const BUILD_DATE = '2026-11-19';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -1557,8 +1557,8 @@ const Save = {
     this.anon = { idToken: j.idToken || j.id_token, refreshToken: j.refreshToken || j.refresh_token, exp: Date.now() + (+(j.expiresIn || j.expires_in) || 3600) * 1000 };
     LS.set('ds.anon', this.anon); return this.anon.idToken;
   },
-  async doc(method, body) {
-    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/saves/${this.user.key}`;
+  async doc(method, body, u = this.user) {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/saves/${u.key}`;
     const tk = await this.token();
     let r;
     try { r = await fetch(url, { method, headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) }); }
@@ -1568,17 +1568,24 @@ const Save = {
   },
 
   // ---- 저장 칸 읽기/쓰기 (닉네임+비밀번호당 1칸) ----
-  async put(data) {
-    if (!CLOUD) { LS.set('ds.local.' + this.user.key, data); return; }
-    await this.doc('PATCH', { fields: { nick: { stringValue: this.user.nick }, savedAt: { timestampValue: data.savedAt }, data: { stringValue: JSON.stringify(data) } } });
+  async put(data, u = this.user) {
+    if (!CLOUD) { LS.set('ds.local.' + u.key, data); return; }
+    await this.doc('PATCH', { fields: { nick: { stringValue: u.nick }, savedAt: { timestampValue: data.savedAt }, data: { stringValue: JSON.stringify(data) } } }, u);
   },
   async get() {
     if (!CLOUD) return LS.get('ds.local.' + this.user.key);
     const j = await this.doc('GET'); return j && j.fields ? JSON.parse(j.fields.data.stringValue) : null;
   },
-  async del() {
-    if (!CLOUD) { LS.del('ds.local.' + this.user.key); return; }
-    await this.doc('DELETE');
+  // 저장·삭제는 한 줄로 세워 순서대로 보낸다(느린 네트워크에서 예전 저장이 최신 저장을 덮거나, 지운 뒤 저장이 되살아나지 않게)
+  q: Promise.resolve(), waiting: null,
+  enqueue(fn) { const p = this.q.then(fn); this.q = p.catch(() => { }); return p; },
+  del(u = this.user) {
+    if (!u) return Promise.resolve();
+    if (this.waiting && this.waiting.job.user.key === u.key) this.waiting.job.skip = true;   // 아직 안 보낸 저장은 취소
+    return this.enqueue(async () => {
+      if (!CLOUD) { LS.del('ds.local.' + u.key); return; }
+      await this.doc('DELETE', null, u);
+    });
   },
 
   // ---- 게임 연결 ----
@@ -1587,10 +1594,20 @@ const Save = {
       returnOrder: S.returnOrder, uid, players: S.players, path: S.path }));
     if (this.user) this.write(true);
   },
-  async write(silent) {
-    if (!this.snap || !this.user) return false;
-    const data = { ...this.snap, savedAt: new Date().toISOString() };
-    try { await this.put(data); this.lastAt = data.savedAt; this.failShown = false; if (!silent) toast('저장됨 ✓'); return true; }
+  write(silent) {
+    if (!this.snap || !this.user) return Promise.resolve(false);
+    const job = { data: { ...this.snap, savedAt: new Date().toISOString() }, user: this.user, silent };
+    // 앞 요청이 끝나길 기다리는 저장이 이미 있으면 가장 최신 상태 하나로 합친다
+    const w = this.waiting;
+    if (w && !w.job.skip && w.job.user.key === job.user.key) { job.silent = job.silent && w.job.silent; w.job = job; return w.p; }
+    const nw = { job }; this.waiting = nw;
+    nw.p = this.enqueue(() => { if (this.waiting === nw) this.waiting = null; return this.writeNow(nw.job); });
+    return nw.p;
+  },
+  async writeNow(job) {
+    if (job.skip) return false;
+    const { data, user, silent } = job;
+    try { await this.put(data, user); if (this.user && this.user.key === user.key) this.lastAt = data.savedAt; this.failShown = false; if (!silent) toast('저장됨 ✓'); return true; }
     catch (e) { if (!silent || !this.failShown) { this.failShown = true; toast(silent ? '자동 저장 실패 · ' + this.errText(e) : this.errText(e), true); } return false; }
   },
   finish() { this.snap = null; if (this.user) this.del().catch(() => { }); },
@@ -1714,8 +1731,9 @@ function openMenu() {
     else if (await ensureLogin('save')) Save.write(false);
   };
   $('#mNew').onclick = async () => { SFX.click(); close(); if (await confirmBox('새 게임', Save.user ? `'${Save.user.nick}' 닉네임으로 저장된 게임이 지워져요.<br>시작 화면으로 돌아갈까요?` : '저장하지 않은 진행 상황은 사라져요.<br>시작 화면으로 돌아갈까요?', '돌아가기')) {
-    if (Save.user) { try { await Save.del(); } catch (e) { toast(Save.errText(e), true); await wait(1500); } }   // 새 게임: 저장 칸도 지움
-    Save.logout(); LS.del('ds.lastNick'); $('#nickIn').value = '';   // 새 게임: 기억해 둔 닉네임도 지움(다음 사람이 앞사람 닉네임을 보지 않게)
+    const u = Save.user; Save.logout();   // 먼저 로그아웃해서 지우는 사이에 새 자동 저장이 끼어들지 않게
+    if (u) { try { await Save.del(u); } catch (e) { toast(Save.errText(e), true); await wait(1500); } }   // 새 게임: 저장 칸도 지움(진행 중인 저장이 끝난 뒤)
+    LS.del('ds.lastNick'); $('#nickIn').value = '';   // 새 게임: 기억해 둔 닉네임도 지움(다음 사람이 앞사람 닉네임을 보지 않게)
     location.reload();
   } };
 }
