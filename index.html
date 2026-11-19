@@ -193,7 +193,7 @@
     font-size: 10px; font-weight: 900; color: #2a1a00; }
 
   #actions { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 30; flex-wrap: wrap; justify-content: center; }
-  #actions.center { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+  #actions.center { bottom: auto; top: 50%; transform: translate(-50%, -50%); width: max-content; max-width: 92vw; }
   #actions.center .dice-btn { width: clamp(124px, min(24vh, 36vw), 210px); height: clamp(108px, min(21vh, 31vw), 184px); padding: 0; border-radius: 50% 50% 44% 44% / 56% 56% 44% 44%;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; white-space: nowrap;
     font-size: clamp(17px, 2.8vh, 24px); font-weight: 900; text-shadow: 0 2px 0 #0a3a90;
@@ -210,6 +210,11 @@
   .btn.gold { background: #e9a514; box-shadow: 0 5px 0 #8a5d00, 0 8px 20px #0008; }
   .btn.gray { background: #4b5d70; box-shadow: 0 5px 0 #2a3644, 0 8px 20px #0008; }
   .btn.green { background: #1fae63; box-shadow: 0 5px 0 #0d6b3a, 0 8px 20px #0008; }
+  .btn.orange { background: #f07a1a; box-shadow: 0 5px 0 #9a4a08, 0 8px 20px #0008; }
+  /* 화면 중앙의 탐색 버튼(보물 캐기·그냥 지나가기 등): 바다 위에서 잘 보이게 크게 + 흰 테두리 */
+  #actions.center .btn:not(.dice-btn) { font-size: clamp(20px, 3vh, 26px); padding: .75em 1.3em; min-width: 7.5em; border-radius: 18px;
+    outline: 3px solid #ffffffd0; outline-offset: -3px; text-shadow: 0 2px 2px #0006; }
+  #actions.center { gap: clamp(12px, 2vw, 22px); }
 
   /* ---------- 오버레이 ---------- */
   .foot { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #8fb3d0; font-size: 12px; opacity: .8; pointer-events: none; }
@@ -432,7 +437,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.7';
+const VERSION = '1.8';
 const BUILD_DATE = '2026-11-19';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -1262,14 +1267,14 @@ async function playTurn(p) {
   if (p.isAI) { await wait(450); c = aiSearch(p); }
   else {
     const opts = [];
-    if (sp.type === 'chip') opts.push({ label: '⛏ 보물 캐기', cls: 'gold', value: { a: 'pick' } });
+    if (sp.type === 'chip') opts.push({ label: '⛏ 보물 캐기', cls: 'green', value: { a: 'pick' } });
     if (sp.type === 'blank' && p.held.length) opts.push({ label: '📦 보물 내려놓기', cls: '', value: { a: 'dropMenu' } });
-    opts.push({ label: '그냥 지나가기', cls: 'gray', value: { a: 'none' } });
-    c = await choose(opts);
+    opts.push({ label: '그냥 지나가기', cls: 'orange', value: { a: 'none' } });
+    c = await choose(opts, true);   // 보물 캐기·내려놓기·그냥 지나가기도 화면 중앙에
     if (c.a === 'dropMenu') {
       const o2 = p.held.map((st, k) => ({ label: `${miniStack(st)} Lv.${stackLevel(st)}${st.length > 1 ? ` 더미×${st.length}` : ''}`, value: { a: 'drop', i: k } }));
       o2.push({ label: '취소', cls: 'gray', value: { a: 'none' } });
-      c = await choose(o2);
+      c = await choose(o2, true);
     }
   }
   if (c.a === 'pick') await digStep(p);
@@ -1677,7 +1682,10 @@ function openMenu() {
     if (Save.user) { Save.logout(); $('#nickIn').value = ''; toast('로그아웃했어요'); if (await ensureLogin('save')) Save.write(false); }
     else if (await ensureLogin('save')) Save.write(false);
   };
-  $('#mNew').onclick = async () => { SFX.click(); close(); if (await confirmBox('새 게임', Save.user ? '이번 차례 시작 시점은 저장돼 있어요.<br>시작 화면으로 돌아갈까요?' : '저장하지 않은 진행 상황은 사라져요.<br>시작 화면으로 돌아갈까요?', '돌아가기')) location.reload(); };
+  $('#mNew').onclick = async () => { SFX.click(); close(); if (await confirmBox('새 게임', Save.user ? '이번 차례 시작 시점은 저장돼 있어요.<br>시작 화면으로 돌아갈까요?' : '저장하지 않은 진행 상황은 사라져요.<br>시작 화면으로 돌아갈까요?', '돌아가기')) {
+    Save.logout(); LS.del('ds.lastNick'); $('#nickIn').value = '';   // 새 게임: 기억해 둔 닉네임도 지움(다음 사람이 앞사람 닉네임을 보지 않게)
+    location.reload();
+  } };
 }
 
 // 키보드: 열린 창(이어하기 카드·확인 창·메뉴)의 버튼을 ←→↑↓로 고르고 엔터로 누르기
@@ -1694,13 +1702,16 @@ addEventListener('keydown', e => {
 
 buildGauges(); renderSetup(); layout(false); ambient();
 camOverview(0);
+$('#nickIn').value = LS.get('ds.lastNick') || '';   // 새로고침 때 브라우저가 이전 입력을 되살리지 않게
 $('#startBtn').onclick = startGame;
 $('#loadBtn').onclick = () => { ac(); SFX.click(); loadFlow(false); };
 $('#menuBtn').onclick = openMenu;
-(() => {   // 게임 중 불러오기로 새로고침한 경우 → 카드를 다시 보여 주고 터치로 이어하기(소리·화면 켜짐 유지에 터치가 필요)
+(() => {   // 게임 중 불러오기로 새로고침한 경우 → 카드는 새로고침 전에 이미 확인했으므로 바로 이어하기
   let r = null; try { r = JSON.parse(sessionStorage.getItem('ds.resume')); sessionStorage.removeItem('ds.resume'); } catch { }
-  if (r && r.d && r.user) { Save.user = r.user; showLoadCard(r.d, false).then(ok => { if (ok) resumeGame(r.d); else Save.logout(); }); }
+  if (r && r.d && r.user) { Save.user = r.user; resumeGame(r.d); }
 })();
+// 새로고침 직후엔 터치 전이라 소리가 잠겨 있을 수 있음 → 첫 터치 때 소리 켜기(화면 켜짐 유지는 KeepAwake가 터치마다 처리)
+['pointerdown', 'touchend', 'keydown'].forEach(ev => addEventListener(ev, () => { if (AC && AC.state === 'suspended') AC.resume(); }, { passive: true }));
 $('#foot').textContent = `v${VERSION} · ${BUILD_DATE}`;
 $('#viewBtn').onclick = () => camOverview(.6);
 addEventListener('resize', () => (world.style.height = seaH() + 'px', setCam({}), $('#setup').classList.contains('show') ? camOverview(0) : camHome(0)));
