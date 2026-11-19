@@ -36,15 +36,18 @@
 
   /* ---------- 잠수함 (노란 잠수함 일러스트 스타일, SVG) ---------- */
   #sub { position: absolute; left: 290px; top: 80px; width: 420px; height: 130px; }
-  .sub-art { position: absolute; left: -70px; top: -70px; width: 540px; height: 240px; overflow: visible; filter: drop-shadow(0 10px 14px #0005); }
-  .sub-art .prop { transform-box: fill-box; transform-origin: 50% 50%; animation: subprop .35s linear infinite; }
+  .sub-art { position: absolute; left: -80px; top: -80px; width: 560px; height: 260px; overflow: visible; filter: drop-shadow(0 10px 14px #0005); }
+  .sub-art .prop { transform-box: fill-box; transform-origin: 50% 50%; animation: subprop .3s linear infinite; }
   @keyframes subprop { 0% { transform: scaleY(1); } 50% { transform: scaleY(-1); } 100% { transform: scaleY(1); } }
-  .sub-gauge { position: absolute; left: 34px; top: 66px; background: #0b2238; border: 3px solid #e8735a; border-radius: 14px;
-    padding: 4px 10px; display: flex; align-items: center; gap: 8px; box-shadow: inset 0 2px 6px #000a; }
-  .sub-gauge .lbl { font-weight: 900; color: #7fd8ff; font-size: 14px; }
-  .sub-gauge .o2num { font-size: 24px; font-weight: 900; color: #fff; width: 34px; text-align: center; }
-  .sub-gauge .o2cells { width: 148px; gap: 1.5px; }
-  .sub-gauge .o2cell { height: 12px; }
+  /* 몸통 가운데 큰 산소 게이지 판: 남색 화면 + 빨간 테두리 + 5×5 칸 */
+  .sub-gauge { position: absolute; left: 108px; top: 44px; background: #0d1a2c; border: 4px solid #ff4b3a; border-radius: 16px;
+    padding: 8px 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 0 3px #a9520f, inset 0 3px 8px #000c; }
+  .sub-gauge .lbl { font-weight: 900; color: #3fb6ff; font-size: 30px; line-height: 1; }
+  .sub-gauge .lbl sub { font-size: .55em; }
+  .sub-gauge .o2num { font-size: 30px; font-weight: 900; color: #fff; width: 40px; text-align: center; line-height: 1; }
+  .sub-gauge .o2cells { width: 84px; gap: 3px; grid-template-columns: repeat(5, 1fr); }
+  .sub-gauge .o2cell { height: 11px; border-radius: 2px; background: #2fe08a; }
+  .sub-gauge .o2cell.off { background: #ffffff22; }
   .o2cells { display: grid; grid-template-columns: repeat(25, 1fr); gap: 2px; width: 230px; }
   .o2cell { height: 14px; background: #2fe08a; border-radius: 2px; transition: background .2s; }
   .o2cell.off { background: #ffffff1a; }
@@ -142,10 +145,46 @@
     font-size: clamp(15px, 2.4vh, 20px); font-weight: 900; padding: 8px 18px 8px 12px; }
   #viewBtn svg { width: clamp(30px, 4.6vh, 42px); height: auto; }
   #viewBtn:active { transform: translateY(2px); }
+  /* 메뉴 버튼(상단 오른쪽 끝) + 저장/불러오기 */
+  #menuBtn { cursor: pointer; font-family: inherit; font-size: clamp(14px, 2.2vh, 18px); font-weight: 900; gap: 6px; }
+  #menuBtn svg { width: clamp(20px, 3vh, 26px); height: auto; }
+  #menuBtn:active { transform: translateY(2px); }
+  #menuOv, #loginOv, #loadOv, #confirmOv { background: #000b; z-index: 70; }
+  #menuOv.show, #loginOv.show, #loadOv.show, #confirmOv.show { display: flex; }
+  .spanel { width: min(400px, 92vw); padding: 22px 24px; max-height: 92vh; overflow: auto; }
+  .spanel h2 { font-size: 22px; }
+  .muser { text-align: center; color: #bfe0ff; font-weight: 800; margin: -6px 0 12px; }
+  .mitem { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; margin: 8px 0; padding: 12px 14px; border-radius: 14px;
+    border: 2px solid #2c6a9c; background: #0b2a48; color: #fff; font-size: 17px; font-weight: 800; }
+  .mitem:active { transform: translateY(2px); }
+  .mitem .ic { font-size: 22px; flex: none; width: 28px; text-align: center; }
+  .mitem small { display: block; font-size: 12px; font-weight: 600; color: #8fb3d0; margin-top: 2px; }
+  .mitem.close { justify-content: center; background: #4b5d70; border-color: #4b5d70; }
+  .mnote { font-size: 12px; color: #ffcf6b; text-align: center; margin-top: 10px; }
+  .field { display: block; margin: 10px 0; font-size: 14px; font-weight: 800; color: #bfe0ff; }
+  .field input { display: block; width: 100%; margin-top: 4px; background: #0b2a48; border: 1px solid #2c6a9c; color: #fff; border-radius: 10px;
+    padding: 10px 12px; font-size: 18px; font-family: inherit; user-select: text; }
+  .field input.pin { letter-spacing: .5em; font-weight: 900; }
+  .ferr { min-height: 20px; color: #ff7b7b; font-size: 14px; font-weight: 700; text-align: center; }
+  .fhint { font-size: 12px; color: #8fb3d0; line-height: 1.5; }
+  .brow { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .brow .btn { padding: 12px 20px; font-size: 17px; }
+  .savedAt { text-align: center; font-size: 19px; font-weight: 900; color: #ffd84a; margin: 4px 0 2px; }
+  .savedSub { text-align: center; color: #bfe0ff; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .lplayers { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; font-size: 14px; }
+  .lplayers span { display: inline-flex; align-items: center; gap: 5px; }
+  #toast { position: fixed; left: 50%; top: 18%; transform: translateX(-50%); z-index: 80; padding: 10px 20px; border-radius: 999px;
+    background: #0d6b3a; color: #fff; font-weight: 900; font-size: 17px; box-shadow: 0 6px 20px #000a; display: none; white-space: nowrap; }
+  #toast.err { background: #a32d2d; }
+  .brow .btn:focus-visible, .mitem:focus-visible { outline: 3px solid #ffd84a; outline-offset: 3px; }   /* 키보드로 고른 버튼 */
+  #setup .brow .btn.load { background: #1e7bff; box-shadow: 0 5px 0 #0d4aa8, 0 8px 20px #0008; }
   @media (max-width: 760px) {
     #top { gap: 5px; }
     .hp { border-radius: 16px; padding: 4px 9px; gap: 6px; border-width: 2px; }
     #roundBox svg { display: none; }
+    #menuBtn span { display: none; }
+    #menuBtn { padding: 4px 10px; }
+    #roundBox { order: 0; } .o2box { order: 1; } #menuBtn { order: 2; } #turnBox { order: 3; } #heldBox { order: 4; }
     .o2box .o2cells { width: 120px; }
     .tslot { width: 44px; }
     .tslot b { right: 5px; }
@@ -278,47 +317,41 @@
     <div id="decor"></div>
     <svg id="pathSvg" width="1000" height="1000"></svg>
     <div id="sub">
-      <svg class="sub-art" viewBox="-70 -70 540 240">
-        <defs><clipPath id="hullClip"><path d="M64,24 L356,24 L356,148 L64,148 A62,62 0 0 1 64,24 Z"/></clipPath></defs>
-        <!-- 꼬리 지느러미 (둥근) -->
-        <path d="M18,56 Q4,30 6,8 Q8,-4 22,-2 Q34,0 44,14 L70,40 Z" fill="#e9ad5b"/>
-        <path d="M18,116 Q4,142 6,164 Q8,176 22,174 Q34,172 44,158 L70,132 Z" fill="#e9ad5b"/>
+      <svg class="sub-art" viewBox="-80 -80 560 260">
+        <defs>
+          <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd36e"/><stop offset=".45" stop-color="#ffb23c"/><stop offset="1" stop-color="#ee8a1e"/></linearGradient>
+          <clipPath id="hullClip"><ellipse cx="215" cy="62" rx="200" ry="90"/></clipPath>
+        </defs>
+        <!-- 꼬리 지느러미 -->
+        <path d="M66,10 Q34,-34 8,-30 Q-4,-8 30,32 Z" fill="#f28a2a" stroke="#a9520f" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M66,114 Q34,158 8,154 Q-4,132 30,92 Z" fill="#f28a2a" stroke="#a9520f" stroke-width="4" stroke-linejoin="round"/>
         <!-- 프로펠러 -->
-        <g class="prop"><ellipse cx="-22" cy="86" rx="8" ry="26" fill="#e9ad5b"/></g>
-        <ellipse cx="-4" cy="86" rx="11" ry="27" fill="#ef7a5c"/>
-        <ellipse cx="-4" cy="86" rx="6" ry="18" fill="#b9523c"/>
-        <!-- 선체 -->
-        <g clip-path="url(#hullClip)">
-          <rect x="0" y="20" width="360" height="132" fill="#ffd62a"/>
-          <ellipse cx="190" cy="150" rx="230" ry="34" fill="#f4b81a"/>
-          <ellipse cx="180" cy="40" rx="200" ry="22" fill="#ffe36a"/>
-          <ellipse cx="150" cy="38" rx="110" ry="7" fill="#fff" opacity=".35"/>
-          <path d="M66,24 Q52,86 66,148" stroke="#eda81e" stroke-width="3.5" fill="none"/>
-          <path d="M330,24 Q318,86 330,148" stroke="#eda81e" stroke-width="3.5" fill="none"/>
+        <rect x="-6" y="54" width="34" height="16" rx="6" fill="#e07b22" stroke="#a9520f" stroke-width="3"/>
+        <g class="prop"><ellipse cx="-20" cy="62" rx="10" ry="44" fill="#d98a4a" opacity=".85"/><ellipse cx="-20" cy="62" rx="16" ry="50" fill="none" stroke="#ffffff55" stroke-width="2"/></g>
+        <ellipse cx="-6" cy="62" rx="10" ry="15" fill="#f08a1c" stroke="#a9520f" stroke-width="3"/>
+        <!-- 조종탑 (고글 창 두 개) -->
+        <rect x="132" y="-60" width="160" height="80" rx="38" fill="url(#hullG)" stroke="#a9520f" stroke-width="5"/>
+        <ellipse cx="200" cy="-50" rx="50" ry="6" fill="#fff" opacity=".35"/>
+        <rect x="148" y="-44" width="56" height="30" rx="14" fill="#f08a1c" stroke="#a9520f" stroke-width="3"/>
+        <rect x="154" y="-39" width="44" height="20" rx="9" fill="#4fb4e4"/>
+        <rect x="220" y="-44" width="56" height="30" rx="14" fill="#f08a1c" stroke="#a9520f" stroke-width="3"/>
+        <rect x="226" y="-39" width="44" height="20" rx="9" fill="#4fb4e4"/>
+        <path d="M160,-34 Q168,-38 178,-37 M232,-34 Q240,-38 250,-37" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
+        <!-- 통통한 몸통 -->
+        <ellipse cx="215" cy="62" rx="200" ry="90" fill="url(#hullG)" stroke="#a9520f" stroke-width="5"/>
+        <g clip-path="url(#hullClip)" fill="none" stroke="#d97b1a" stroke-width="3" opacity=".8">
+          <path d="M92,-30 Q74,62 92,154"/><path d="M338,-30 Q356,62 338,154"/>
+          <path d="M10,104 Q215,130 420,104"/>
         </g>
-        <!-- 조종탑 + 잠망경 -->
-        <path d="M200,-6 L200,-36 Q200,-50 214,-50 L228,-50" stroke="#e39f4e" stroke-width="11" stroke-linecap="round" fill="none"/>
-        <rect x="222" y="-64" width="30" height="28" rx="10" fill="#ffd62a"/>
-        <ellipse cx="252" cy="-50" rx="6.5" ry="13" fill="#ef7a5c"/>
-        <ellipse cx="253" cy="-50" rx="3.8" ry="9" fill="#6cc3ef"/>
-        <path d="M150,30 Q156,-2 170,-6 Q200,-14 230,-6 Q244,-2 250,30 Z" fill="#e9ad5b"/>
-        <ellipse cx="200" cy="-5" rx="31" ry="8" fill="#f3c27c"/>
-        <!-- 둥근 창 -->
-        <circle cx="300" cy="86" r="20" fill="#ef7a5c"/>
-        <circle cx="300" cy="86" r="15.5" fill="#9b4535"/>
-        <circle cx="300" cy="86" r="13" fill="#6cc3ef"/>
-        <circle cx="300" cy="90" r="5.5" fill="#3f8fc0" opacity=".7"/><path d="M292,102 Q300,92 308,102 Z" fill="#3f8fc0" opacity=".7"/>
-        <path d="M291,81 A10,10 0 0 1 300,75" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".8"/>
-        <circle cx="336" cy="48" r="3.5" fill="#fff4c2"/>
-        <!-- 유리 돔 (조종석) -->
-        <path d="M352,20 A80,66 0 0 1 352,152 Z" fill="#5fb3e6" opacity=".88"/>
-        <circle cx="388" cy="70" r="9" fill="#3a85b8" opacity=".75"/>
-        <path d="M374,84 Q388,77 400,86 L402,112 L376,112 Z" fill="#3a85b8" opacity=".75"/>
-        <path d="M378,110 L410,110 L414,132 L405,132 L401,119 L380,119 Z" fill="#2f6f9e" opacity=".75"/>
-        <path d="M372,36 A66,52 0 0 1 418,62" stroke="#fff" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".55"/>
-        <ellipse cx="352" cy="86" rx="11" ry="67" fill="none" stroke="#ef7a5c" stroke-width="9"/>
+        <ellipse cx="190" cy="-4" rx="135" ry="16" fill="#fff" opacity=".28"/>
+        <g fill="#fff" opacity=".4"><circle cx="70" cy="40" r="3"/><circle cx="86" cy="58" r="2"/><circle cx="58" cy="78" r="2.5"/><circle cx="360" cy="112" r="3"/><circle cx="330" cy="128" r="2"/><circle cx="120" cy="132" r="2.5"/><circle cx="300" cy="8" r="2"/></g>
+        <!-- 앞쪽 둥근 창 -->
+        <circle cx="384" cy="54" r="34" fill="#f08a1c" stroke="#a9520f" stroke-width="4"/>
+        <circle cx="384" cy="54" r="24" fill="#3a9fd2" stroke="#a9520f" stroke-width="2"/>
+        <path d="M370,44 A17,17 0 0 1 388,36" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" opacity=".75"/>
+        <circle cx="394" cy="66" r="4" fill="#fff" opacity=".35"/>
       </svg>
-      <div class="sub-gauge"><div class="lbl">O₂</div><div class="o2num">25</div><div class="o2cells"></div></div>
+      <div class="sub-gauge"><div class="lbl">O<sub>2</sub></div><div class="o2num">25</div><div class="o2cells"></div></div>
     </div>
     <div id="spaces"></div>
     <div id="divers"></div>
@@ -333,6 +366,7 @@
   <div class="hp o2box"><div class="o2bub">O<sub>2</sub></div><b class="o2num">25</b><div class="o2cells"></div></div>
   <div class="hp" id="turnBox"><div class="hcol"><small>현재 플레이어</small><b id="turnLbl">—</b><span id="turnHeld"></span></div></div>
   <div class="hp" id="heldBox"><small>보유 보물</small><div class="tslots" id="tslots"></div></div>
+  <button class="hp" id="menuBtn" aria-label="메뉴"><svg viewBox="0 0 24 20"><rect y="1" width="24" height="3.4" rx="1.7" fill="#fff"/><rect y="8.3" width="24" height="3.4" rx="1.7" fill="#fff"/><rect y="15.6" width="24" height="3.4" rx="1.7" fill="#fff"/></svg><span>메뉴</span></button>
 </div>
 </div>
 <button class="hp" id="viewBtn"><svg viewBox="0 0 54 46"><path d="M3 10 L18 4 L36 10 L51 4 L51 40 L36 46 L18 40 L3 46 Z" fill="#f4e2a8"/><path d="M18 4 L36 10 L36 46 L18 40 Z" fill="#e2c97e"/><path d="M8 30 Q16 22 26 28 T46 22" stroke="#4aa36a" stroke-width="5" fill="none" opacity=".8"/><path d="M8 18 Q14 14 20 18" stroke="#5aa8e0" stroke-width="4" fill="none"/><path d="M38 4 C31 4 29 13 38 22 C47 13 45 4 38 4 Z" fill="#ff4a4a"/><circle cx="38" cy="10" r="3" fill="#fff"/></svg>전체보기</button>
@@ -361,7 +395,7 @@
     <div class="tag">산소는 모두의 것, 보물은 나의 것</div>
     <div class="cntRow">인원 <span id="cntBtns"></span></div>
     <div id="prows"></div>
-    <div class="center"><button class="btn green" id="startBtn">잠수 시작!</button></div>
+    <div class="brow"><button class="btn green" id="startBtn">잠수 시작!</button><button class="btn load" id="loadBtn">📂 이어하기</button></div>
     <div class="rule">
       · 턴 시작 시 <b>들고 있는 보물 수만큼</b> 공용 산소가 줄어듭니다.<br>
       · 주사위 합 − 보물 수만큼 이동하고, 다른 잠수부가 있는 칸은 건너뜁니다.<br>
@@ -374,19 +408,31 @@
 <div id="roulette" class="overlay"><div class="panel"><h2>🎯 차례 정하기</h2><div class="rchips"></div><div class="rorder"></div><div class="rmsg"></div><div class="rbtn center"></div></div></div>
 <div id="summary" class="overlay"><div class="panel" id="summaryPanel"></div></div>
 <div id="final" class="overlay"><div class="panel" id="finalPanel"></div></div>
+<div id="menuOv" class="overlay"><div class="panel spanel" id="menuPanel"></div></div>
+<div id="loginOv" class="overlay"><div class="panel spanel">
+  <h2 id="loginTitle">닉네임으로 저장</h2>
+  <label class="field">닉네임<input id="nickIn" maxlength="8" autocomplete="off" placeholder="닉네임"></label>
+  <label class="field">비밀번호 4자리<input id="pinIn" class="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"></label>
+  <div class="fhint" id="loginHint"></div>
+  <div class="ferr" id="loginErr"></div>
+  <div class="brow"><button class="btn green" id="loginOk">확인</button><button class="btn gray" id="loginCancel">취소</button></div>
+</div></div>
+<div id="loadOv" class="overlay"><div class="panel spanel" id="loadPanel"></div></div>
+<div id="confirmOv" class="overlay"><div class="panel spanel" id="confirmPanel"></div></div>
+<div id="toast"></div>
 
 <script>
 // ================== 상수 ==================
 const W = 1000, SUB = { x: 500, y: 150 };
 const ROW_Y0 = 300, ROW_H = 130, COLS = 8, X0 = 111, XS = 111;
-const SUB_SLOTS = [312, 360, 408, 592, 640, 688];
+const SUB_SLOTS = [375, 427, 479, 531, 583, 635];   // 게이지 판 바로 위 몸통에 한 줄로 탑승
 const LEVEL = {
   1: { c: '#f3d77f', d: '#8a6a1c', clip: 'polygon(50% 4%,96% 92%,4% 92%)' },
   2: { c: '#f2a44c', d: '#80460c', clip: 'polygon(8% 8%,92% 8%,92% 92%,8% 92%)' },
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.5';
+const VERSION = '1.6';
 const BUILD_DATE = '2026-11-19';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -1202,16 +1248,18 @@ function showFinal() {
       <span style="flex:1"><b>${x.p.name}</b><div class="fchips">${chips}</div></span><b style="font-size:24px;color:#ffe14d">${x.score}점</b></div>`;
   }).join('') + '<div class="center"><button class="btn green" onclick="location.reload()">다시 하기</button></div>';
   $('#final').classList.add('show');
+  Save.finish();   // 끝난 게임은 저장 칸에서 지움
   gsap.from('#finalPanel', { scale: .7, opacity: 0, duration: .5, ease: 'back.out(2)' });
   SFX.success();
 }
 
-async function gameLoop() {
+async function gameLoop(resumeCur) {
   while (true) {
-    let cur = S.start;
+    let cur = resumeCur ?? S.start; resumeCur = undefined;
     while (true) {
       const p = S.players[cur];
       if (!p.returned) {
+        Save.mark(cur);   // 차례 시작 시점 기록 + 자동 저장
         await playTurn(p);
         if (S.depleted || S.players.every(q => q.returned)) break;
       }
@@ -1301,6 +1349,12 @@ async function rouletteOrder(list) {
 
 async function startGame() {
   ac(); SFX.click();
+  // 시작할 때 닉네임+비밀번호 → 턴마다 자동 저장 (건너뛰면 저장 없이 시작, 메뉴에서 나중에 저장 가능)
+  Save.logout();
+  if (await ensureLogin('start')) {
+    let d = null; try { d = await Save.get(); } catch (e) { toast(Save.errText(e), true); }
+    if (d && await showLoadCard(d, false, true)) return resumeGame(d);   // 같은 칸에 저장된 게임이 있으면 이어하기 선택 가능
+  }
   $('#setup').classList.remove('show');
   // 룰렛으로 차례 순서 정하기
   const list = cfg.map((c, i) => ({ name: c.name.trim() || `P${i + 1}`, isAI: c.isAI, color: COLORS[i] }));
@@ -1316,9 +1370,244 @@ async function startGame() {
   gameLoop();
 }
 
+// ================== 저장 / 불러오기 ==================
+// Firebase 웹 앱 설정값. 비어 있으면 이 기기(브라우저)에만 저장한다.
+// Firebase SDK 없이 REST API(fetch)로 직접 호출 — 외부 라이브러리는 GSAP 하나 유지.
+const FIREBASE = { apiKey: 'AIzaSyCTqFpMMU2OF3Xbz-Ce7CAO9ZTn6MvbG_U', projectId: 'deepsea-f67d5' };
+const CLOUD = !!(FIREBASE.apiKey && FIREBASE.projectId);
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } },
+  del(k) { try { localStorage.removeItem(k); } catch { } },
+};
+const fmtDate = iso => new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short', hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+function toast(text, err = false) {
+  const t = $('#toast'); t.textContent = text; t.classList.toggle('err', err); t.style.display = 'block';
+  gsap.killTweensOf(t); gsap.fromTo(t, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: .25 });
+  gsap.to(t, { opacity: 0, delay: 1.6, duration: .4, onComplete: () => (t.style.display = 'none') });
+}
+const nickKey = n => n.trim().toLowerCase();
+// 저장 칸 주소 = SHA-256(닉네임 + 비밀번호 4자리). 같은 닉네임·비밀번호면 어느 기기에서든 같은 칸.
+async function slotKey(nick, pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`deepsea|${nickKey(nick)}|${pin}`));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+const Save = {
+  user: null,   // {nick, key} — 이번 게임에서만 유지(여러 사람이 같은 기기를 써도 남의 칸에 저장되지 않게). 비밀번호는 저장하지 않음
+  anon: LS.get('ds.anon'),   // Firebase 익명 로그인 토큰 {idToken, refreshToken, exp} (기기마다 따로)
+  snap: null,                // 현재 차례 시작 시점의 게임 상태
+  lastAt: null, failShown: false,
+
+  // ---- 닉네임 + 비밀번호 ----
+  async login(nick, pin) {
+    nick = nick.trim();
+    this.user = { nick, key: await slotKey(nick, pin) }; this.lastAt = null;
+    LS.set('ds.lastNick', nick);   // 다음 입력 때 닉네임만 미리 채움
+  },
+  logout() { this.user = null; this.lastAt = null; },
+  errText(e) {
+    const m = e.message || '';
+    if (m === 'NET') return '인터넷 연결을 확인해 주세요';
+    if (/ADMIN_ONLY|OPERATION_NOT_ALLOWED/.test(m)) return 'Firebase에서 익명 로그인이 꺼져 있어요';
+    if (/PERMISSION_DENIED/.test(m)) return 'Firestore 규칙을 확인해 주세요';
+    return '저장소에 연결하지 못했어요 (' + m + ')';
+  },
+
+  // ---- Firebase 익명 로그인 (REST) ----
+  async token() {
+    const a = this.anon;
+    if (a && a.exp - Date.now() > 60000) return a.idToken;
+    let r, j;
+    try {
+      r = a ? await fetch(`https://securetoken.googleapis.com/v1/token?key=${FIREBASE.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(a.refreshToken)}` })
+            : await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ returnSecureToken: true }) });
+      j = await r.json();
+    } catch { throw new Error('NET'); }
+    if (j.error) { if (a) { this.anon = null; LS.del('ds.anon'); return this.token(); } throw new Error(j.error.message); }   // 갱신 실패 → 익명 계정 새로 만들기
+    this.anon = { idToken: j.idToken || j.id_token, refreshToken: j.refreshToken || j.refresh_token, exp: Date.now() + (+(j.expiresIn || j.expires_in) || 3600) * 1000 };
+    LS.set('ds.anon', this.anon); return this.anon.idToken;
+  },
+  async doc(method, body) {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/saves/${this.user.key}`;
+    const tk = await this.token();
+    let r;
+    try { r = await fetch(url, { method, headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) }); }
+    catch { throw new Error('NET'); }
+    if (r.status === 404) return null;
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error?.status || 'HTTP' + r.status); return j;
+  },
+
+  // ---- 저장 칸 읽기/쓰기 (닉네임+비밀번호당 1칸) ----
+  async put(data) {
+    if (!CLOUD) { LS.set('ds.local.' + this.user.key, data); return; }
+    await this.doc('PATCH', { fields: { nick: { stringValue: this.user.nick }, savedAt: { timestampValue: data.savedAt }, data: { stringValue: JSON.stringify(data) } } });
+  },
+  async get() {
+    if (!CLOUD) return LS.get('ds.local.' + this.user.key);
+    const j = await this.doc('GET'); return j && j.fields ? JSON.parse(j.fields.data.stringValue) : null;
+  },
+  async del() {
+    if (!CLOUD) { LS.del('ds.local.' + this.user.key); return; }
+    await this.doc('DELETE');
+  },
+
+  // ---- 게임 연결 ----
+  mark(cur) {   // 차례가 시작될 때 상태를 찍어 두고, 로그인돼 있으면 자동 저장
+    this.snap = JSON.parse(JSON.stringify({ ver: 1, round: S.round, cur, start: S.start, air: S.air, alarmShown: !!S.alarmShown,
+      returnOrder: S.returnOrder, uid, players: S.players, path: S.path }));
+    if (this.user) this.write(true);
+  },
+  async write(silent) {
+    if (!this.snap || !this.user) return false;
+    const data = { ...this.snap, savedAt: new Date().toISOString() };
+    try { await this.put(data); this.lastAt = data.savedAt; this.failShown = false; if (!silent) toast('저장됨 ✓'); return true; }
+    catch (e) { if (!silent || !this.failShown) { this.failShown = true; toast(silent ? '자동 저장 실패 · ' + this.errText(e) : this.errText(e), true); } return false; }
+  },
+  finish() { this.snap = null; if (this.user) this.del().catch(() => { }); },
+};
+
+function ensureLogin(mode) {   // mode: 'save' / 'load' — 닉네임+비밀번호로 저장 칸을 정함
+  return new Promise(res => {
+    const ov = $('#loginOv'), err = $('#loginErr'), nick = $('#nickIn'), pin = $('#pinIn');
+    $('#loginTitle').textContent = { save: '닉네임으로 저장', load: '저장된 게임 불러오기', start: '🤿 잠수 준비' }[mode];
+    $('#loginHint').innerHTML = {
+      start: '<b style="color:#ffd84a">닉네임과 비밀번호 4자리를 넣으면 각 플레이어 차례마다 자동 저장됩니다.</b><br>다른 기기에서도 같은 닉네임과 비밀번호로 이어 할 수 있어요. 비밀번호를 잊으면 저장을 찾을 수 없어요.',
+      save: '저장하면 이후 각 플레이어 차례마다 자동 저장됩니다. 다른 기기에서도 같은 닉네임과 비밀번호 4자리를 넣으면 이어 할 수 있어요. 비밀번호를 잊으면 저장을 찾을 수 없어요.',
+      load: '저장할 때 쓴 닉네임과 비밀번호 4자리를 넣어 주세요.' }[mode];
+    $('#loginOk').textContent = mode === 'start' ? '시작' : '확인';
+    $('#loginCancel').textContent = mode === 'start' ? '저장 없이 시작' : '취소';
+    if (!CLOUD) $('#loginHint').innerHTML += ' (지금은 이 기기에만 저장돼요)';
+    err.textContent = ''; pin.value = ''; if (!nick.value) nick.value = Save.user?.nick || LS.get('ds.lastNick') || '';
+    pin.oninput = () => { pin.value = pin.value.replace(/\D/g, '').slice(0, 4); err.textContent = ''; };
+    nick.oninput = () => (err.textContent = '');
+    // 엔터키: 닉네임 → 비밀번호 칸, 비밀번호 → 확인(시작)
+    nick.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.stopPropagation(); pin.focus(); } };
+    pin.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.stopPropagation(); $('#loginOk').click(); } };
+    ov.classList.add('show'); gsap.from('#loginOv .panel', { y: 40, opacity: 0, duration: .3, ease: 'back.out(2)' });
+    setTimeout(() => (nick.value ? pin : nick).focus(), 50);   // 바로 입력할 수 있게
+    const close = ok => { ov.classList.remove('show'); res(ok); };
+    $('#loginCancel').onclick = () => { SFX.click(); close(false); };
+    $('#loginOk').onclick = async () => {
+      if (!nick.value.trim()) { err.textContent = '닉네임을 넣어 주세요'; return; }
+      if (!/^\d{4}$/.test(pin.value)) { err.textContent = '비밀번호는 숫자 4자리예요'; return; }
+      SFX.click(); $('#loginOk').disabled = true; err.textContent = '확인하는 중…';
+      try { await Save.login(nick.value, pin.value, mode === 'save'); close(true); }
+      catch (e) { err.textContent = Save.errText(e); }
+      $('#loginOk').disabled = false;
+    };
+  });
+}
+
+function confirmBox(title, text, okLabel) {
+  return new Promise(res => {
+    $('#confirmPanel').innerHTML = `<h2>${title}</h2><div class="savedSub">${text}</div>
+      <div class="brow"><button class="btn green" id="cfOk">${okLabel}</button><button class="btn gray" id="cfNo">취소</button></div>`;
+    $('#confirmOv').classList.add('show'); setTimeout(() => $('#cfOk').focus(), 50);
+    const done = v => { SFX.click(); $('#confirmOv').classList.remove('show'); res(v); };
+    $('#cfOk').onclick = () => done(true); $('#cfNo').onclick = () => done(false);
+  });
+}
+
+// 저장된 게임 카드: 저장 날짜·시간 + 라운드·차례·참가자
+function showLoadCard(d, inGame, atStart) {
+  return new Promise(res => {
+    const p = $('#loadPanel');
+    if (!d) {
+      p.innerHTML = `<h2>📂 불러오기</h2><div class="savedSub">'${Save.user.nick}' 닉네임과 이 비밀번호로 저장된 게임이 없어요</div>
+        <div class="brow"><button class="btn" id="ldRe">다시 입력</button><button class="btn gray" id="ldNo">닫기</button></div>`;
+      $('#ldRe').onclick = () => { SFX.click(); $('#loadOv').classList.remove('show'); res('retry'); };
+    } else {
+      const score = pl => pl.scored.flat().reduce((s, c) => s + c.value, 0);
+      p.innerHTML = `<h2>📂 저장된 게임</h2>
+        <div class="savedSub" style="margin-bottom:2px">${Save.user.nick} 님 · 저장한 날짜·시간</div>
+        <div class="savedAt">${fmtDate(d.savedAt)}</div>
+        <div class="savedSub">ROUND ${d.round} / 3 · 산소 ${d.air} · <b style="color:#fff">${d.players[d.cur].name}</b> 차례</div>
+        <div class="lplayers">${d.players.map(pl => `<span><span class="dot" style="background:${pl.color}"></span>${pl.name} ${score(pl)}점</span>`).join('')}</div>
+        ${inGame ? '<div class="mnote">지금 하던 게임은 저장한 시점 이후 내용이 사라져요</div>' : ''}
+        ${atStart ? '<div class="mnote">새 게임을 시작하면 이 저장은 새 게임으로 덮어써져요</div>' : ''}
+        <div class="brow"><button class="btn green" id="ldOk">이어하기</button><button class="btn gray" id="ldNo">${atStart ? '새 게임 시작' : '취소'}</button></div>`;
+      $('#ldOk').onclick = () => { SFX.click(); $('#loadOv').classList.remove('show'); res(true); };
+    }
+    $('#loadOv').classList.add('show'); gsap.from('#loadPanel', { y: 40, opacity: 0, duration: .3, ease: 'back.out(2)' });
+    setTimeout(() => $('#loadPanel button').focus(), 50);
+    $('#ldNo').onclick = () => { SFX.click(); $('#loadOv').classList.remove('show'); res(false); };
+  });
+}
+
+async function loadFlow(inGame, prev = Save.user, prevAt = Save.lastAt) {
+  // 이어하기는 항상 닉네임+비밀번호 입력. 취소하면 원래 로그인(지금 게임의 저장 칸)으로 되돌림.
+  const back = () => { Save.user = prev; Save.lastAt = prevAt; };
+  if (!(await ensureLogin('load'))) return back();
+  let d;
+  try { d = await Save.get(); } catch (e) { toast(Save.errText(e), true); return back(); }
+  const ok = await showLoadCard(d, inGame);
+  if (ok === 'retry') return loadFlow(inGame, prev, prevAt);
+  if (!ok) return back();
+  if (inGame) { try { sessionStorage.setItem('ds.resume', JSON.stringify({ d, user: Save.user })); } catch { } location.reload(); }   // 돌고 있는 차례를 깨끗이 끊고 다시 시작
+  else resumeGame(d);
+}
+
+async function resumeGame(d) {
+  ac(); KeepAwake.on();
+  $('#setup').classList.remove('show');
+  Object.assign(S, { players: d.players, path: d.path, air: d.air, round: d.round, start: d.start, cur: -1, depleted: false, alarmShown: d.alarmShown, returnOrder: d.returnOrder });
+  uid = Math.max(d.uid || 0, ...d.path.map(sp => sp.id));
+  Save.snap = d; Save.lastAt = d.savedAt;
+  $('#topStack').style.display = 'flex'; $('#viewBtn').style.display = 'flex';
+  buildDivers(); layout(false); updateGauges(S.air); renderHUD();
+  await camHome(0, diverPos(S.players[d.cur]));
+  await banner(`ROUND ${S.round} 이어하기`, `${S.players[d.cur].name} 차례부터 계속합니다`, '#1e7bff', 1);
+  gameLoop(d.cur);
+}
+
+function openMenu() {
+  SFX.click();
+  const u = Save.user, P = $('#menuPanel');
+  const saveSub = u ? (Save.lastAt ? `마지막 저장: ${fmtDate(Save.lastAt)}` : '자동 저장: 매 차례 시작할 때') : '닉네임과 비밀번호 4자리로 저장';
+  P.innerHTML = `<h2>메뉴</h2><div class="muser">${u ? `👤 ${u.nick} · 자동 저장 켜짐` : '로그인 안 됨'}</div>
+    <button class="mitem" id="mSave"><span class="ic">💾</span><span>지금 저장하기<small>${saveSub}</small></span></button>
+    <button class="mitem" id="mLoad"><span class="ic">📂</span><span>불러오기<small>저장한 날짜·시간을 보고 이어 하기</small></span></button>
+    <button class="mitem" id="mUser"><span class="ic">👤</span><span>${u ? '닉네임 바꾸기' : '로그인'}<small>${u ? `${u.nick} 님 로그아웃` : '저장·불러오기에 쓸 닉네임'}</small></span></button>
+    <button class="mitem" id="mNew"><span class="ic">🏠</span><span>새 게임<small>시작 화면으로 돌아가기</small></span></button>
+    <button class="mitem close" id="mClose">닫기</button>
+    <div class="mnote">${CLOUD ? '저장은 이번 차례가 시작된 시점으로 돼요' : '저장은 이번 차례가 시작된 시점으로 돼요 · 지금은 이 기기에만 저장'}</div>`;
+  const ov = $('#menuOv'); ov.classList.add('show'); setTimeout(() => $('#mSave').focus(), 50);
+  gsap.from('#menuPanel', { y: -30, opacity: 0, duration: .3, ease: 'back.out(2)' });
+  const close = () => ov.classList.remove('show');
+  $('#mClose').onclick = () => { SFX.click(); close(); };
+  ov.onclick = e => { if (e.target === ov) close(); };
+  $('#mSave').onclick = async () => { SFX.click(); close(); if (!Save.user && !(await ensureLogin('save'))) return; await Save.write(false); };
+  $('#mLoad').onclick = () => { SFX.click(); close(); loadFlow(true); };
+  $('#mUser').onclick = async () => {
+    SFX.click(); close();
+    if (Save.user) { Save.logout(); $('#nickIn').value = ''; toast('로그아웃했어요'); if (await ensureLogin('save')) Save.write(false); }
+    else if (await ensureLogin('save')) Save.write(false);
+  };
+  $('#mNew').onclick = async () => { SFX.click(); close(); if (await confirmBox('새 게임', Save.user ? '이번 차례 시작 시점은 저장돼 있어요.<br>시작 화면으로 돌아갈까요?' : '저장하지 않은 진행 상황은 사라져요.<br>시작 화면으로 돌아갈까요?', '돌아가기')) location.reload(); };
+}
+
+// 키보드: 열린 창(이어하기 카드·확인 창·메뉴)의 버튼을 ←→↑↓로 고르고 엔터로 누르기
+addEventListener('keydown', e => {
+  const ov = ['#loadOv', '#confirmOv', '#menuOv'].map(q => $(q)).find(o => o.classList.contains('show'));
+  if (!ov || e.target.tagName === 'INPUT' || e.repeat) return;   // 입력 칸의 엔터(비밀번호 확인)가 카드 버튼까지 누르지 않게
+  const btns = [...ov.querySelectorAll('button')].filter(b => !b.disabled);
+  if (!btns.length) return;
+  const i = btns.indexOf(document.activeElement), n = btns.length;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btns[(i + 1) % n].focus(); SFX.tick(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btns[(i - 1 + n) % n].focus(); SFX.tick(); }
+  else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (i >= 0 ? btns[i] : btns[0]).click(); }
+});
+
 buildGauges(); renderSetup(); layout(false); ambient();
 camOverview(0);
 $('#startBtn').onclick = startGame;
+$('#loadBtn').onclick = () => { ac(); SFX.click(); loadFlow(false); };
+$('#menuBtn').onclick = openMenu;
+(() => {   // 게임 중 불러오기로 새로고침한 경우 → 카드를 다시 보여 주고 터치로 이어하기(소리·화면 켜짐 유지에 터치가 필요)
+  let r = null; try { r = JSON.parse(sessionStorage.getItem('ds.resume')); sessionStorage.removeItem('ds.resume'); } catch { }
+  if (r && r.d && r.user) { Save.user = r.user; showLoadCard(r.d, false).then(ok => { if (ok) resumeGame(r.d); else Save.logout(); }); }
+})();
 $('#foot').textContent = `v${VERSION} · ${BUILD_DATE}`;
 $('#viewBtn').onclick = () => camOverview(.6);
 addEventListener('resize', () => (world.style.height = seaH() + 'px', setCam({}), $('#setup').classList.contains('show') ? camOverview(0) : camHome(0)));
