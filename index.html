@@ -1518,12 +1518,12 @@ function showLoadCard(d, inGame, atStart) {
         <div class="brow"><button class="btn" id="ldRe">다시 입력</button><button class="btn gray" id="ldNo">닫기</button></div>`;
       $('#ldRe').onclick = () => { SFX.click(); $('#loadOv').classList.remove('show'); res('retry'); };
     } else {
-      const score = pl => pl.scored.flat().reduce((s, c) => s + c.value, 0);
+      // 점수는 게임 끝까지 비공개(원작 규칙) → 확보한 보물 개수만 표시. 잃은 보물 묶음은 1개로 셈
       p.innerHTML = `<h2>📂 저장된 게임</h2>
         <div class="savedSub" style="margin-bottom:2px">${Save.user.nick} 님 · 저장한 날짜·시간</div>
         <div class="savedAt">${fmtDate(d.savedAt)}</div>
         <div class="savedSub">ROUND ${d.round} / 3 · 산소 ${d.air} · <b style="color:#fff">${d.players[d.cur].name}</b> 차례</div>
-        <div class="lplayers">${d.players.map(pl => `<span><span class="dot" style="background:${pl.color}"></span>${pl.name} ${score(pl)}점</span>`).join('')}</div>
+        <div class="lplayers">${d.players.map(pl => `<span><span class="dot" style="background:${pl.color}"></span>${pl.name} 보물 ${pl.scored.length}개</span>`).join('')}</div>
         ${inGame ? '<div class="mnote">지금 하던 게임은 저장한 시점 이후 내용이 사라져요</div>' : ''}
         ${atStart ? '<div class="mnote">새 게임을 시작하면 이 저장은 새 게임으로 덮어써져요</div>' : ''}
         <div class="brow"><button class="btn green" id="ldOk">이어하기</button><button class="btn gray" id="ldNo">${atStart ? '새 게임 시작' : '취소'}</button></div>`;
