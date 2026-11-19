@@ -91,8 +91,14 @@
   .hudpop { position: fixed; z-index: 25; font-weight: 900; font-size: 18px; color: #ff8080; text-shadow: 0 2px 0 #000, 0 0 8px #000; pointer-events: none; white-space: nowrap; }
   .diver .cnt { position: absolute; top: -12px; right: -12px; min-width: 30px; height: 30px; border-radius: 15px; padding: 0 4px; background: #ffd23f; color: #3a2500;
     font-size: 18px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #3a2500; }
-  .diver .ord { position: absolute; bottom: -10px; right: -10px; width: 27px; height: 27px; border-radius: 50%; background: #0b2238; color: #fff;
+  .diver .ord { position: absolute; top: -12px; left: -8px; width: 27px; height: 27px; border-radius: 50%; background: #0b2238; color: #fff;
     font-size: 15px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px #0009; }   /* 차례 번호 */
+  .diver .ntag { position: absolute; left: 50%; top: calc(100% - 15px); transform: translateX(-50%); z-index: 1; max-width: 120px; padding: 2px 9px; border-radius: 11px;
+    background: #0b2238e6; color: #fff; font-size: 15px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    border: 2px solid var(--pc); box-shadow: 0 2px 6px #0009; pointer-events: none; transition: font-size .3s, max-width .3s, top .3s, padding .3s; }   /* 이름표: 잠수부 아래쪽에 겹쳐서 */
+  .diver.active .ntag { background: #ffe14d; color: #2a1a00; }
+  .diver.onsub .ntag { font-size: 11px; max-width: 52px; padding: 1px 4px; top: calc(100% - 10px); border-width: 1.5px; }
+  .diver .ord, .diver .cnt, .diver .arr { z-index: 2; }   /* 배지·화살표는 이름표 위에   /* 잠수함 위는 자리가 좁아 작게 */
   .axe { position: absolute; left: 0; top: 0; font-size: 34px; margin: -17px 0 0 -17px; }
   .dust { position: absolute; left: 0; top: 0; border-radius: 50%; background: #d9c08a; }
   .spark { position: absolute; left: 0; top: 0; color: #ffe680; font-size: 18px; text-shadow: 0 0 8px #ffd000; }
@@ -437,7 +443,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.8';
+const VERSION = '1.9';
 const BUILD_DATE = '2026-11-19';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -535,7 +541,7 @@ function spacePos(i) { return curveAt((i - 1) * CURVE.STEP); } // i: 1부터 (0�
 function worldH() { let m = 0; for (let i = 1; i <= Math.max(1, S.path.length); i++) m = Math.max(m, spacePos(i).y); return m + 140; }
 function diverPos(p) {
   if (p.pos === 0) return { x: SUB_SLOTS[p.idx], y: 98 };
-  const s = spacePos(p.pos); return { x: s.x, y: s.y - 30 };   // 보물 칸 위쪽 절반에 겹쳐 앉기
+  const s = spacePos(p.pos); return { x: s.x, y: s.y - 12 };   // 보물 칸을 대부분 덮도록 겹쳐 앉기(예전 -30)
 }
 // 화면에서 HUD를 뺀 '보이는 영역'
 const HUD_BOTTOM = 96;
@@ -688,7 +694,8 @@ function buildDivers() {
   S.players.forEach(p => {
     const el = document.createElement('div'); el.className = 'diver';
     el.style.setProperty('--pc', p.color);
-    el.innerHTML = `🤿<div class="arr"></div><div class="cnt" style="display:none"></div><div class="ord">${p.idx + 1}</div>`;
+    el.innerHTML = `🤿<div class="ntag"></div><div class="arr"></div><div class="cnt" style="display:none"></div><div class="ord"></div>`;
+    el.querySelector(".ntag").textContent = p.name;   // 이름표
     $('#divers').appendChild(el); diverEls[p.idx] = el;
     const d = diverPos(p); gsap.set(el, { x: d.x, y: d.y });
   });
@@ -703,6 +710,9 @@ function updateDiver(p) {
     gsap.fromTo(arr, { y: 0 }, { y: p.dir === 'down' ? 4 : -4, duration: .5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
   }
   cnt.style.display = p.held.length ? 'flex' : 'none'; cnt.textContent = p.held.length;
+  // 차례 번호: 이번 라운드에서 몇 번째로 하는지(라운드마다 선이 바뀌면 번호도 바뀜)
+  const n = S.players.length, ord = el.querySelector('.ord'), num = String((p.idx - (S.start || 0) + n) % n + 1);
+  if (ord.textContent !== num) { const had = ord.textContent !== ''; ord.textContent = num; if (had) gsap.fromTo(ord, { scale: 1.9 }, { scale: 1, duration: .5, ease: 'back.out(3)' }); }
   el.classList.toggle('active', p.idx === S.cur);
   el.classList.toggle('onsub', p.pos === 0);
 }
