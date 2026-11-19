@@ -432,7 +432,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.6';
+const VERSION = '1.7';
 const BUILD_DATE = '2026-11-19';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -1105,28 +1105,121 @@ async function dropStep(p, stackIdx) {
 }
 
 // ================== AI ==================
+// 판단할 때마다 남은 라운드를 수백 번 가상으로 끝까지 진행(몬테카를로)해서
+// "무사히 가져올 보물 점수의 기댓값 − 잃을 위험"이 가장 큰 행동을 고른다.
+// 보물 실제 점수는 모르는 것으로 보고 레벨 평균값(Lv1 1.5 · Lv2 5.5 · Lv3 9.5 · Lv4 13.5)만 쓴다.
 function stackLevel(st) { return Math.max(...st.map(c => c.level)); }
-function aiNeed(p, extra = 0) {
-  const held = p.held.length + extra, speed = Math.max(.7, 4 - held);
-  const load = S.players.filter(q => !q.returned && q.pos > 0).reduce((s, q) => s + q.held.length, 0) + extra;
-  return (p.pos / speed) * Math.max(1, load);
+const AI_SIMS = 260;          // 선택지마다 가상 진행 횟수
+const AI_RISK = 3;            // 들고 있다 잃는 보물에 주는 벌점 비율 (클수록 조심스러움 — 귀환 실패를 크게 줄이도록 높게)
+const lvEV = lv => (lv - 1) * 4 + 1.5;
+const stackEV = st => st.reduce((s, c) => s + lvEV(c.level), 0);
+
+// 현재 게임 상태를 가볍게 복사
+function simSnap() {
+  return {
+    air: S.air, depleted: S.depleted, len: S.path.length,
+    path: S.path.map(sp => sp.type === 'chip' ? { c: 1, ev: stackEV(sp.chips), lv: stackLevel(sp.chips) } : { c: 0 }),
+    pl: S.players.map(q => ({ pos: q.pos, dir: q.dir, ret: q.returned, held: q.held.map(st => ({ ev: stackEV(st), lv: stackLevel(st) })) }))
+  };
+}
+function simClone(g) {
+  return { air: g.air, depleted: g.depleted, len: g.len, path: g.path.map(x => ({ ...x })),
+    pl: g.pl.map(q => ({ pos: q.pos, dir: q.dir, ret: q.ret, held: q.held.slice() })) };
+}
+// 귀환까지 필요한 산소 대략치: 남은 칸 ÷ 평균 이동 × 한 바퀴당 산소 소모(밖에 있는 모두의 보물 수)
+function simNeed(g, q, extra = 0) {
+  const h = q.held.length + extra, speed = Math.max(.6, 4 - h);
+  let load = extra;
+  g.pl.forEach(o => { if (!o.ret && o.pos > 0) load += o.held.length; });
+  return Math.ceil(q.pos / speed) * Math.max(1, load);
+}
+// 가상 진행용 기본 전략 (빠르고 조심스러운 규칙)
+function simDirPolicy(g, q) {
+  if (!q.held.length) return 'down';
+  if (q.pos >= g.len) return 'up';
+  if (simNeed(g, q) * 1.35 + 2 >= g.air) return 'up';
+  if (q.held.length >= 4) return 'up';
+  return Math.random() < .12 * q.held.length ? 'up' : 'down';
+}
+function simSearchPolicy(g, q) {
+  const sp = g.path[q.pos - 1]; if (!sp) return null;
+  if (sp.c) {
+    if (q.dir === 'down') {
+      if (!q.held.length) return (sp.lv >= 2 || g.air < 18) ? 'pick' : null;
+      return simNeed(g, q, 1) * 1.5 + 2 < g.air && (sp.lv >= 2 || q.held.length < 2) ? 'pick' : null;
+    }
+    return simNeed(g, q, 1) * 1.5 + 2 < g.air ? 'pick' : null;
+  }
+  if (q.dir === 'up' && q.held.length >= 2 && simNeed(g, q) > g.air) return 'drop';
+  return null;
+}
+function simMove(g, q, steps) {
+  for (let s = 0; s < steps; s++) {
+    const occ = new Set(); g.pl.forEach(o => { if (o !== q && o.pos > 0) occ.add(o.pos); });
+    let next = null;
+    if (q.dir === 'down') { for (let i = q.pos + 1; i <= g.len; i++) if (!occ.has(i)) { next = i; break; } }
+    else { next = 0; for (let i = q.pos - 1; i >= 1; i--) if (!occ.has(i)) { next = i; break; } }
+    if (next === null) break;
+    q.pos = next;
+    if (q.pos === 0) { q.ret = true; break; }
+  }
+}
+function simSearchApply(g, q, a) {
+  const i = q.pos - 1, sp = g.path[i];
+  if (a === 'pick' && sp && sp.c) { q.held.push({ ev: sp.ev, lv: sp.lv }); g.path[i] = { c: 0 }; }
+  else if (a === 'drop' && sp && !sp.c && q.held.length) {
+    let mi = 0; q.held.forEach((h, k) => { if (h.ev < q.held[mi].ev) mi = k; });
+    const st = q.held.splice(mi, 1)[0]; g.path[i] = { c: 1, ev: st.ev, lv: st.lv };
+  }
+}
+// 한 차례의 나머지 부분 진행. from: 'start'(산소부터) | 'dice'(방향 정한 뒤) | 'end'(탐색 끝)
+function simTurn(g, k, from, forceDir) {
+  const q = g.pl[k];
+  if (from === 'start') {
+    if (q.held.length) { g.air = Math.max(0, g.air - q.held.length); if (g.air <= 0) g.depleted = true; }
+    if (q.pos === 0) q.dir = 'down';
+    else if (q.dir === 'down' && simDirPolicy(g, q) === 'up') q.dir = 'up';
+  }
+  if (from !== 'end') {
+    if (forceDir) q.dir = forceDir;
+    const steps = Math.max(0, r3() + r3() - q.held.length);
+    simMove(g, q, steps);
+    if (!q.ret) simSearchApply(g, q, simSearchPolicy(g, q));
+  }
+}
+// 라운드 끝까지 진행 후 me의 결과: 가져온 기댓값, 잃은 기댓값
+function simFinish(g, k, me) {
+  const n = g.pl.length;
+  let guard = 0;
+  while (!g.depleted && !g.pl.every(q => q.ret) && guard++ < 400) {
+    k = (k + 1) % n;
+    if (!g.pl[k].ret) simTurn(g, k, 'start');
+  }
+  const q = g.pl[me], v = q.held.reduce((s, h) => s + h.ev, 0);
+  return (q.ret || q.pos === 0) ? { keep: v, lost: 0 } : { keep: 0, lost: v };
+}
+function simScore(make) {
+  let keep = 0, lost = 0;
+  for (let t = 0; t < AI_SIMS; t++) { const r = make(); keep += r.keep; lost += r.lost; }
+  return (keep - AI_RISK * lost) / AI_SIMS;
 }
 function aiDir(p) {
   if (p.held.length === 0) return 'down';
-  if (aiNeed(p) >= S.air * .6) return 'up';
-  if (p.held.length >= (S.round === 1 ? 2 : 3)) return 'up';
-  if (p.pos >= S.path.length - 1) return 'up';
-  return 'down';
+  if (p.pos >= S.path.length) return 'up';
+  const base = simSnap(), me = p.idx;
+  const val = d => simScore(() => { const g = simClone(base); simTurn(g, me, 'dice', d); return simFinish(g, me, me); });
+  return val('up') >= val('down') ? 'up' : 'down';
 }
 function aiSearch(p) {
   const sp = S.path[p.pos - 1]; if (!sp) return { a: 'none' };
-  if (sp.type === 'chip') {
-    if (p.dir === 'down') return (p.held.length < 2 || stackLevel(sp.chips) >= 3) ? { a: 'pick' } : { a: 'none' };
-    return aiNeed(p, 1) < S.air * .5 ? { a: 'pick' } : { a: 'none' };
-  }
-  if (p.dir === 'up' && p.held.length >= 2 && aiNeed(p) > S.air * 1.1) {
-    let mi = 0; p.held.forEach((h, k) => { if (stackLevel(h) < stackLevel(p.held[mi])) mi = k; });
-    return { a: 'drop', i: mi };
+  const base = simSnap(), me = p.idx;
+  const val = a => simScore(() => { const g = simClone(base); simSearchApply(g, g.pl[me], a); return simFinish(g, me, me); });
+  if (sp.type === 'chip') return val('pick') > val(null) ? { a: 'pick' } : { a: 'none' };
+  if (p.held.length) {
+    if (val('drop') > val(null) + .3) {
+      let mi = 0; p.held.forEach((h, k) => { if (stackEV(h) < stackEV(p.held[mi])) mi = k; });
+      return { a: 'drop', i: mi };
+    }
   }
   return { a: 'none' };
 }
