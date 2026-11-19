@@ -464,7 +464,7 @@ const LEVEL = {
   3: { c: '#e2654b', d: '#6e1e12', clip: 'polygon(50% 3%,97% 38%,79% 95%,21% 95%,3% 38%)' },
   4: { c: '#c8479a', d: '#541040', clip: 'polygon(25% 5%,75% 5%,99% 50%,75% 95%,25% 95%,1% 50%)' },
 };
-const VERSION = '1.9';
+const VERSION = '2.0';
 const BUILD_DATE = '2026-11-19';
 const COLORS = ['#ff5a5f', '#3fa7ff', '#2fd07a', '#ffb800', '#a86bff', '#ff7ac8'];
 
@@ -1481,8 +1481,8 @@ async function startGame() {
   // 시작할 때 닉네임+비밀번호 → 턴마다 자동 저장 (건너뛰면 저장 없이 시작, 메뉴에서 나중에 저장 가능)
   Save.logout();
   if (await ensureLogin('start')) {
-    let d = null; try { d = await Save.get(); } catch (e) { toast(Save.errText(e), true); }
-    if (d && await showLoadCard(d, false, true)) return resumeGame(d);   // 같은 칸에 저장된 게임이 있으면 이어하기 선택 가능
+    // 잠수 시작 = 새 게임: 이 닉네임+비밀번호로 저장돼 있던 게임은 지우고, 첫 차례부터 새로 저장(이어 하려면 📂 이어하기)
+    try { await Save.del(); } catch (e) { toast(Save.errText(e), true); }
   }
   $('#setup').classList.remove('show');
   // 룰렛으로 차례 순서 정하기
@@ -1601,7 +1601,7 @@ function ensureLogin(mode) {   // mode: 'save' / 'load' — 닉네임+비밀번�
     const ov = $('#loginOv'), err = $('#loginErr'), nick = $('#nickIn'), pin = $('#pinIn');
     $('#loginTitle').textContent = { save: '닉네임으로 저장', load: '저장된 게임 불러오기', start: '🤿 잠수 준비' }[mode];
     $('#loginHint').innerHTML = {
-      start: '<b style="color:#ffd84a">닉네임과 비밀번호 4자리를 넣으면 각 플레이어 차례마다 자동 저장됩니다.</b><br>다른 기기에서도 같은 닉네임과 비밀번호로 이어 할 수 있어요. 비밀번호를 잊으면 저장을 찾을 수 없어요.',
+      start: '<b style="color:#ffd84a">닉네임과 비밀번호 4자리를 넣으면 각 플레이어 차례마다 자동 저장됩니다.</b><br>같은 닉네임으로 저장된 게임이 있으면 지우고 새로 저장해요(이어 하려면 📂 이어하기).<br>다른 기기에서도 같은 닉네임과 비밀번호로 이어 할 수 있어요. 비밀번호를 잊으면 저장을 찾을 수 없어요.',
       save: '저장하면 이후 각 플레이어 차례마다 자동 저장됩니다. 다른 기기에서도 같은 닉네임과 비밀번호 4자리를 넣으면 이어 할 수 있어요. 비밀번호를 잊으면 저장을 찾을 수 없어요.',
       load: '저장할 때 쓴 닉네임과 비밀번호 4자리를 넣어 주세요.' }[mode];
     $('#loginOk').textContent = mode === 'start' ? '시작' : '확인';
@@ -1713,7 +1713,8 @@ function openMenu() {
     if (Save.user) { Save.logout(); $('#nickIn').value = ''; toast('로그아웃했어요'); if (await ensureLogin('save')) Save.write(false); }
     else if (await ensureLogin('save')) Save.write(false);
   };
-  $('#mNew').onclick = async () => { SFX.click(); close(); if (await confirmBox('새 게임', Save.user ? '이번 차례 시작 시점은 저장돼 있어요.<br>시작 화면으로 돌아갈까요?' : '저장하지 않은 진행 상황은 사라져요.<br>시작 화면으로 돌아갈까요?', '돌아가기')) {
+  $('#mNew').onclick = async () => { SFX.click(); close(); if (await confirmBox('새 게임', Save.user ? `'${Save.user.nick}' 닉네임으로 저장된 게임이 지워져요.<br>시작 화면으로 돌아갈까요?` : '저장하지 않은 진행 상황은 사라져요.<br>시작 화면으로 돌아갈까요?', '돌아가기')) {
+    if (Save.user) { try { await Save.del(); } catch (e) { toast(Save.errText(e), true); await wait(1500); } }   // 새 게임: 저장 칸도 지움
     Save.logout(); LS.del('ds.lastNick'); $('#nickIn').value = '';   // 새 게임: 기억해 둔 닉네임도 지움(다음 사람이 앞사람 닉네임을 보지 않게)
     location.reload();
   } };
